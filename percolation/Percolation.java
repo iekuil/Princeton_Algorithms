@@ -11,7 +11,19 @@ public class Percolation {
     private int nSize;
 
     // 连通状态
-    private WeightedQuickUnionUF wqn;
+    // 使用两个wqn是因为有可能出现
+    //      [head virtual site] -> [...] -> [one site in the last row] -> [tail virtual site] -> [another site in the last row]
+    // 在这样的连接通路下，
+    // 当调用isFull()时，
+    // 即使位于最后一排的另一个site本身并没有真的处于full状态，也会返回true
+    //
+    // 另外一种防止这种情况出现的思路是去除末端的虚拟site，
+    // 当调用percolate()方法时，
+    // 利用for循环逐个检查起始虚拟site和最后一排的site之间的连通关系，
+    // 但是这种做法的效率很低，
+    // 过不了timing和内存访问的tests
+    private WeightedQuickUnionUF wqnWithTailVirtualSite;
+    private WeightedQuickUnionUF wqnWithoutTailVirtualSite;
 
     // 记录site的状态（open/close）
     private boolean[][] state;
@@ -30,7 +42,9 @@ public class Percolation {
         }
 
         nSize = n;
-        wqn = new WeightedQuickUnionUF(n * n + 2);
+        wqnWithTailVirtualSite = new WeightedQuickUnionUF(n * n + 1 + 1);
+        wqnWithoutTailVirtualSite = new WeightedQuickUnionUF(n * n + 1);
+
         state = new boolean[n][n];
         openSitesNumber = 0;
 
@@ -63,33 +77,47 @@ public class Percolation {
         state[row - 1][col - 1] = true;
         openSitesNumber += 1;
 
-        if (rowInArray == 0) {
-            wqn.union(0, convert(rowInArray, colInArray));
-        }
-        else {
-            if (isOpen(row - 1, col)) {
-                wqn.union(convert(rowInArray, colInArray), convert(rowInArray - 1, colInArray));
-            }
-        }
-
-        if (rowInArray == nSize - 1) {
-            wqn.union(convert(rowInArray, colInArray), nSize * nSize + 1);
-        }
-        else {
-            if (isOpen(row + 1, col)) {
-                wqn.union(convert(rowInArray, colInArray), convert(rowInArray + 1, colInArray));
-            }
-        }
-
         if (colInArray != 0) {
             if (isOpen(row, col - 1)) {
-                wqn.union(convert(rowInArray, colInArray), convert(rowInArray, colInArray - 1));
+                wqnWithTailVirtualSite.union(convert(rowInArray, colInArray),
+                                             convert(rowInArray, colInArray - 1));
+                wqnWithoutTailVirtualSite.union(convert(rowInArray, colInArray),
+                                                convert(rowInArray, colInArray - 1));
             }
         }
 
         if (colInArray != nSize - 1) {
             if (isOpen(row, col + 1)) {
-                wqn.union(convert(rowInArray, colInArray), convert(rowInArray, colInArray + 1));
+                wqnWithTailVirtualSite.union(convert(rowInArray, colInArray),
+                                             convert(rowInArray, colInArray + 1));
+                wqnWithoutTailVirtualSite.union(convert(rowInArray, colInArray),
+                                                convert(rowInArray, colInArray + 1));
+            }
+        }
+
+        if (rowInArray == 0) {
+            wqnWithTailVirtualSite.union(0, convert(rowInArray, colInArray));
+            wqnWithoutTailVirtualSite.union(0, convert(rowInArray, colInArray));
+        }
+        else {
+            if (isOpen(row - 1, col)) {
+                wqnWithTailVirtualSite.union(convert(rowInArray, colInArray),
+                                             convert(rowInArray - 1, colInArray));
+                wqnWithoutTailVirtualSite.union(convert(rowInArray, colInArray),
+                                                convert(rowInArray - 1, colInArray));
+            }
+        }
+
+        if (rowInArray == nSize - 1) {
+
+            wqnWithTailVirtualSite.union(convert(rowInArray, colInArray), nSize * nSize + 1);
+        }
+        else {
+            if (isOpen(row + 1, col)) {
+                wqnWithTailVirtualSite.union(convert(rowInArray, colInArray),
+                                             convert(rowInArray + 1, colInArray));
+                wqnWithoutTailVirtualSite.union(convert(rowInArray, colInArray),
+                                                convert(rowInArray + 1, colInArray));
             }
         }
     }
@@ -109,7 +137,8 @@ public class Percolation {
         if (row < 1 || col < 1 || row > nSize || col > nSize) {
             throw new IllegalArgumentException("row/col out of range in isFull()\n");
         }
-        return wqn.find(0) == wqn.find(convert(row - 1, col - 1));
+        return wqnWithoutTailVirtualSite.find(0) == wqnWithoutTailVirtualSite.find(
+                convert(row - 1, col - 1));
     }
 
     // returns the number of open sites
@@ -121,7 +150,7 @@ public class Percolation {
     // does the system percolate?
     public boolean percolates() {
         // 测试开头的虚拟site和末端的虚拟site能否连通
-        return wqn.find(0) == wqn.find(nSize * nSize + 1);
+        return wqnWithTailVirtualSite.find(0) == wqnWithTailVirtualSite.find(nSize * nSize + 1);
     }
 
     private int convert(int row, int col) {

@@ -49,7 +49,7 @@ public class PercolationStats {
         meanValue = StdStats.mean(openPercent);
         stdDevValue = StdStats.stddev(openPercent);
 
-        double tmp = 1.96 * Math.sqrt(stdDevValue) / Math.sqrt(trials);
+        double tmp = 1.96 * stdDevValue / Math.sqrt(trials);
         confidenceIntervalLo = meanValue - tmp;
         confidenceIntervalHi = meanValue + tmp;
     }
