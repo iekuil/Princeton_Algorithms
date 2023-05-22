@@ -6,22 +6,20 @@
 
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
+import edu.princeton.cs.algs4.StdStats;
 
 public class PercolationStats {
-    // 记录每个矩阵在达到percolates状态时处于open状态的百分比
-    private double open_percent[];
-
     // 平均值
-    private double mean_value;
+    private double meanValue;
 
     // 标准差
-    private double std_dev_value;
+    private double stdDevValue;
 
     // 置信区间下界
-    private double confidence_interval_lo;
+    private double confidenceIntervalLo;
 
     // 置信区间上届
-    private double confidence_interval_hi;
+    private double confidenceIntervalHi;
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
@@ -34,54 +32,50 @@ public class PercolationStats {
             throw new IllegalArgumentException("initial n <= 0 for percolationStats\n");
         }
 
-        double sum_value = 0;
-
-        open_percent = new double[trials];
-        mean_value = 0;
-        std_dev_value = 0;
-        confidence_interval_lo = 0;
-        confidence_interval_hi = 0;
+        double[] openPercent = new double[trials];
+        meanValue = 0;
+        stdDevValue = 0;
+        confidenceIntervalLo = 0;
+        confidenceIntervalHi = 0;
 
         for (int i = 0; i < trials; i++) {
-            Percolation single_test = new Percolation(n);
-            while (!single_test.percolates()) {
-                single_test.open(StdRandom.uniformInt(n), StdRandom.uniformInt(n));
+            Percolation singleTest = new Percolation(n);
+            while (!singleTest.percolates()) {
+                singleTest.open(StdRandom.uniformInt(1, n + 1), StdRandom.uniformInt(1, n + 1));
             }
-            open_percent[i] = (double) single_test.numberOfOpenSites() / (n * n);
-            sum_value += open_percent[i];
+            openPercent[i] = (double) singleTest.numberOfOpenSites() / (n * n);
         }
 
-        mean_value = sum_value / trials;
-        for (int i = 0; i < trials; i++) {
-            std_dev_value += Math.pow(open_percent[i] - mean_value, 2) / (trials - 1);
-        }
-        double tmp = 1.96 * Math.sqrt(std_dev_value) / Math.sqrt(trials);
-        confidence_interval_lo = mean_value - tmp;
-        confidence_interval_hi = mean_value + tmp;
+        meanValue = StdStats.mean(openPercent);
+        stdDevValue = StdStats.stddev(openPercent);
+
+        double tmp = 1.96 * Math.sqrt(stdDevValue) / Math.sqrt(trials);
+        confidenceIntervalLo = meanValue - tmp;
+        confidenceIntervalHi = meanValue + tmp;
     }
 
     // sample mean of percolation threshold
     public double mean() {
         // 返回记录平均数的成员变量
-        return mean_value;
+        return meanValue;
     }
 
     // sample standard deviation of percolation threshold
     public double stddev() {
         // 返回记录标准差的成员变量
-        return std_dev_value;
+        return stdDevValue;
     }
 
     // low endpoint of 95% confidence interval
     public double confidenceLo() {
         // 返回记录置信区间左端的成员变量
-        return confidence_interval_lo;
+        return confidenceIntervalLo;
     }
 
     // high endpoint of 95% confidence interval
     public double confidenceHi() {
         // 返回记录置信区间右端的成员变量
-        return confidence_interval_hi;
+        return confidenceIntervalHi;
     }
 
     // test client (see below)
