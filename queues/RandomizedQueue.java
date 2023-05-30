@@ -103,12 +103,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             throw new NoSuchElementException("empty when dequeue");
         }
 
-        if (StdRandom.bernoulli()) {
-            return deque.removeFirst();
-        }
-        else {
-            return deque.removeLast();
-        }
+        return deque.removeFirst();
     }
 
     // return a random item (but do not remove it)
