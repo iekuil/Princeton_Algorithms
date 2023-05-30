@@ -4,7 +4,11 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdRandom;
+
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 // 随机队列: 类似于栈或队列，区别在于每次进行pop操作删除的是随机元素
 // 迭代器要求:
@@ -28,43 +32,130 @@ import java.util.Iterator;
 //
 public class RandomizedQueue<Item> implements Iterable<Item> {
 
+    private Deque<Item> deque;
+
+    private class RandomizedQueueIterator implements Iterator<Item> {
+
+        private Iterator<Item> iterForDeque;
+
+        public RandomizedQueueIterator() {
+            Deque<Item> iterDeque = new Deque<Item>();
+            for (Item i : deque) {
+                if (StdRandom.bernoulli()) {
+                    iterDeque.addFirst(i);
+                }
+                else {
+                    iterDeque.addLast(i);
+                }
+            }
+            iterForDeque = iterDeque.iterator();
+        }
+
+
+        public boolean hasNext() {
+            return iterForDeque.hasNext();
+        }
+
+        public Item next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException("empty in iterator");
+            }
+            return iterForDeque.next();
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("unsupported: remove");
+        }
+    }
+
     // construct an empty randomized queue
     public RandomizedQueue() {
-
+        deque = new Deque<Item>();
     }
 
     // is the randomized queue empty?
     public boolean isEmpty() {
-
+        return deque.isEmpty();
     }
 
     // return the number of items on the randomized queue
     public int size() {
-
+        return deque.size();
     }
 
     // add the item
     public void enqueue(Item item) {
+        if (item == null) {
+            throw new IllegalArgumentException("null for RandomizedQueue.enqueue");
+        }
 
+        if (StdRandom.bernoulli()) {
+            deque.addFirst(item);
+        }
+        else {
+            deque.addLast(item);
+        }
     }
 
     // remove and return a random item
     public Item dequeue() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("empty when dequeue");
+        }
 
+        if (StdRandom.bernoulli()) {
+            return deque.removeFirst();
+        }
+        else {
+            return deque.removeLast();
+        }
     }
 
     // return a random item (but do not remove it)
     public Item sample() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("empty when sample");
+        }
 
+        Item item;
+        item = dequeue();
+        enqueue(item);
+        return item;
     }
 
     // return an independent iterator over items in random order
     public Iterator<Item> iterator() {
-
+        return new RandomizedQueueIterator();
     }
 
     // unit testing (required)
     public static void main(String[] args) {
+        RandomizedQueue<String> test = new RandomizedQueue<String>();
+
+        StdOut.printf("enqueue: 0,1,2,3,4,5\n");
+        for (int i = 0; i < 6; i++) {
+            test.enqueue(Integer.toString(i));
+        }
+
+        StdOut.printf("try sample for six times\n");
+        for (int i = 0; i < 6; i++) {
+            StdOut.printf("%s", test.sample());
+        }
+        StdOut.println();
+
+        StdOut.printf("current size: %d, empty? %b\n", test.size(), test.isEmpty());
+
+        StdOut.printf("remove 3 randon elements\n");
+        for (int i = 0; i < 3; i++) {
+            StdOut.printf("%s", test.dequeue());
+        }
+        StdOut.println();
+
+        StdOut.printf("try iterator:\n");
+        for (String s : test) {
+            StdOut.printf("%s", s);
+        }
+        StdOut.println();
 
     }
 
