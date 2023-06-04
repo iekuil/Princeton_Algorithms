@@ -13,6 +13,52 @@ import java.util.ArrayList;
 public class BruteCollinearPoints {
 
     private ArrayList<LineSegment> segments;
+    private ArrayList<MyLineSegment> mySegments;
+
+    private class MyLineSegment {
+        private final Point p;   // one endpoint of this line segment
+        private final Point q;   // the other endpoint of this line segment
+
+        public MyLineSegment(Point p, Point q) {
+            if (p == null || q == null) {
+                throw new IllegalArgumentException("argument to LineSegment constructor is null");
+            }
+            if (p.equals(q)) {
+                throw new IllegalArgumentException(
+                        "both arguments to LineSegment constructor are the same point: " + p);
+            }
+            this.p = p;
+            this.q = q;
+        }
+
+        public Point getP() {
+            return p;
+        }
+
+        public Point getQ() {
+            return q;
+        }
+
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj.getClass() == this.getClass())) {
+                return false;
+            }
+            if ((this.p.compareTo(((MyLineSegment) obj).getP()) == 0
+                    && this.q.compareTo(((MyLineSegment) obj).getQ()) == 0) || (
+                    this.p.compareTo(((MyLineSegment) obj).getQ()) == 0
+                            && this.q.compareTo(((MyLineSegment) obj).getP()) == 0)) {
+                return true;
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            throw new UnsupportedOperationException("hashCode() is not supported");
+        }
+    }
 
     // finds all line segments containing 4 points
     public BruteCollinearPoints(Point[] points) {
@@ -24,30 +70,35 @@ public class BruteCollinearPoints {
         if (points == null) {
             throw new IllegalArgumentException("null for BruteCollinearPoints");
         }
+        checkNullInArray(points);
 
         segments = new ArrayList<>();
+        mySegments = new ArrayList<>();
 
-        for (Point p1 : points) {
-            for (Point p2 : points) {
-                if (p1.compareTo(p2) == 0) {
+        for (int p1 = 0; p1 < points.length; p1++) {
+            for (int p2 = 0; p2 < points.length; p2++) {
+                if (p2 == p1) {
                     continue;
                 }
-                for (Point p3 : points) {
-                    if (p1.compareTo(p3) == 0 || p2.compareTo(p3) == 0) {
+                for (int p3 = 0; p3 < points.length; p3++) {
+                    if (p3 == p1 || p3 == p2) {
                         continue;
                     }
-                    for (Point p4 : points) {
-                        if (p1.compareTo(p4) == 0 || p2.compareTo(p4) == 0
-                                || p3.compareTo(p4) == 0) {
+                    for (int p4 = 0; p4 < points.length; p4++) {
+                        if (p4 == p1 || p4 == p2 || p4 == p3) {
                             continue;
                         }
-                        Point min = getMinPoint(p1, p2, p3, p4);
-                        Point max = getMaxPoint(p1, p2, p3, p4);
+                        Point min = getMinPoint(points[p1], points[p2], points[p3], points[p4]);
+                        Point max = getMaxPoint(points[p1], points[p2], points[p3], points[p4]);
 
-                        if (p1.slopeTo(p2) == p1.slopeTo(p3) && p1.slopeTo(p3) == p1.slopeTo(p4)) {
+                        if (points[p1].slopeTo(points[p2]) == points[p1].slopeTo(points[p3])
+                                &&
+                                points[p1].slopeTo(points[p3]) == points[p1].slopeTo(points[p4])) {
                             LineSegment seg = new LineSegment(min, max);
-                            if (checkSegment(seg)) {
+                            MyLineSegment mySeg = new MyLineSegment(min, max);
+                            if (checkSegment(mySeg)) {
                                 segments.add(seg);
+                                mySegments.add(mySeg);
                             }
                         }
                     }
@@ -92,9 +143,18 @@ public class BruteCollinearPoints {
         return max;
     }
 
-    private boolean checkSegment(LineSegment newLine) {
-        for (LineSegment line : segments) {
-            if (line.toString().equals(newLine.toString())) {
+    private void checkNullInArray(Point[] points) {
+        for (Point p : points) {
+            if (p == null) {
+                throw new IllegalArgumentException(
+                        "null in array for BruteCollinearPoints.BruteCollinearPoints");
+            }
+        }
+    }
+
+    private boolean checkSegment(MyLineSegment newLine) {
+        for (MyLineSegment myLine : mySegments) {
+            if (myLine.equals(newLine)) {
                 return false;
             }
         }
