@@ -4,6 +4,8 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
@@ -152,27 +154,32 @@ public class FastCollinearPoints {
     }
 
     public static void main(String[] args) {
-        ArrayList<Point> points = new ArrayList<>();
-        points.add(new Point(1, 1));
-        points.add(new Point(2, 2));
-        points.add(new Point(3, 3));
-        points.add(new Point(4, 4));
-        points.add(new Point(5, 5));
 
-        points.add(new Point(1, 2));
-        points.add(new Point(2, 4));
-        points.add(new Point(3, 6));
-        points.add(new Point(4, 8));
-
-        points.add(new Point(1, 3));
-        points.add(new Point(2, 6));
-        points.add(new Point(3, 9));
-
-        FastCollinearPoints fsp = new FastCollinearPoints(points.toArray(new Point[0]));
-        StdOut.printf("size: %d\n", fsp.numberOfSegments());
-        LineSegment[] segments = fsp.segments();
-        for (LineSegment line : segments) {
-            StdOut.println(line.toString());
+        // read the n points from a file
+        In in = new In(args[0]);
+        int n = in.readInt();
+        Point[] points = new Point[n];
+        for (int i = 0; i < n; i++) {
+            int x = in.readInt();
+            int y = in.readInt();
+            points[i] = new Point(x, y);
         }
+
+        // draw the points
+        StdDraw.enableDoubleBuffering();
+        StdDraw.setXscale(0, 32768);
+        StdDraw.setYscale(0, 32768);
+        for (Point p : points) {
+            p.draw();
+        }
+        StdDraw.show();
+
+        // print and draw the line segments
+        FastCollinearPoints collinear = new FastCollinearPoints(points);
+        for (LineSegment segment : collinear.segments()) {
+            StdOut.println(segment);
+            segment.draw();
+        }
+        StdDraw.show();
     }
 }
