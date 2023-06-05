@@ -85,6 +85,17 @@
     &quot;last_opened_file_path&quot;: &quot;E:/code/algorithms/collinear&quot;
   }
 }</component>
+  <component name="RunManager">
+    <configuration name="BruteCollinearPoints" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="BruteCollinearPoints" />
+      <module name="Algorithms, Part I" />
+      <option name="PROGRAM_PARAMETERS" value="input8.txt" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application">
+      <method v="2" />
+    </configuration>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="project-level" UseSingleDictionary="true" transferred="true" />
   <component name="TodoView">
     <todo-panel id="selected-file">
