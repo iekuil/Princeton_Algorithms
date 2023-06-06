@@ -27,6 +27,8 @@ public class FastCollinearPoints {
         lineSegments = new ArrayList<>();
 
         Point[] samePoints = checkPoints(points);
+        Point[] backup = Arrays.copyOf(samePoints, samePoints.length);
+
         for (Point p0 : points) {
             // 遍历点集中的所有点，分别以每个点为基准点，依据基准点到每个点的斜率大小对数组进行排序
             // 对于排序后的数组，尽可能地多匹配具有相同斜率的点
@@ -38,82 +40,80 @@ public class FastCollinearPoints {
             // 将这些点组成新的数组，交给getMinPoint()和getMaxPoint()找出线段的端点
             // 检查segments是否已存在相应的线段
             Comparator<Point> comparator = p0.slopeOrder();
+
+            samePoints = Arrays.copyOf(backup, backup.length);
+
             Arrays.sort(samePoints, comparator);
 
             int i, j = 1;
+
+            double lastSlope = p0.slopeTo(samePoints[0]);
             for (i = 1; i < samePoints.length; i++) {
 
-                if (comparator.compare(samePoints[i], samePoints[i - 1]) == 0) {
+                double thisSlope = p0.slopeTo(samePoints[i]);
+
+                if (Double.compare(lastSlope, thisSlope) == 0) {
                     j++;
                 }
                 else {
                     if (j < 3) {
                         j = 1;
+                        lastSlope = thisSlope;
                         continue;
                     }
-
-                    Arrays.sort(samePoints, i - j, i);
-
-                    Point min;
-                    Point max;
-                    if (p0.compareTo(samePoints[i - j]) < 0) {
-                        min = p0;
-                    }
-                    else {
-                        min = samePoints[i - j];
-                    }
-
-                    if (p0.compareTo(samePoints[i - 1]) > 0) {
-                        max = p0;
-                    }
-                    else {
-                        max = samePoints[i - 1];
-                    }
-
-                    if (checkSegment(min, max)) {
-                        LineSegment newLine = new LineSegment(min, max);
-                        segements.add(newLine);
-                        lineSegments.add(min);
-                        lineSegments.add(max);
+                    Point p1 = samePoints[i - j];
+                    Point p2 = samePoints[i - 1];
+                    if (checkSegment(p0, p1, p2)) {
+                        tryingAddSegment(p0, p1, p2);
                     }
 
                     j = 1;
                 }
 
+                lastSlope = thisSlope;
+
             }
             if (j >= 3) {
-                Arrays.sort(samePoints, i - j, i);
-
-                Point min;
-                Point max;
-                if (p0.compareTo(samePoints[i - j]) < 0) {
-                    min = p0;
-                }
-                else {
-                    min = samePoints[i - j];
-                }
-
-                if (p0.compareTo(samePoints[i - 1]) > 0) {
-                    max = p0;
-                }
-                else {
-                    max = samePoints[i - 1];
-                }
-
-                if (checkSegment(min, max)) {
-                    LineSegment newLine = new LineSegment(min, max);
-                    segements.add(newLine);
-                    lineSegments.add(min);
-                    lineSegments.add(max);
+                Point p1 = samePoints[i - j];
+                Point p2 = samePoints[i - 1];
+                if (checkSegment(p0, p1, p2)) {
+                    tryingAddSegment(p0, p1, p2);
                 }
             }
         }
     }
 
-    private boolean checkSegment(Point min, Point max) {
+    private void tryingAddSegment(Point p0, Point p1, Point p2) {
+
+        Point min;
+        Point max;
+
+        if (p0.compareTo(p1) < 0) {
+            min = p0;
+            max = p2;
+        }
+        else {
+            min = p1;
+            if (p0.compareTo(p2) > 0) {
+                max = p0;
+            }
+            else {
+                max = p2;
+            }
+        }
+
+        LineSegment newLine = new LineSegment(min, max);
+        segements.add(newLine);
+        lineSegments.add(min);
+        lineSegments.add(max);
+    }
+
+    private boolean checkSegment(Point p0, Point p1, Point p2) {
         for (int i = 0; i < lineSegments.size(); i += 2) {
-            if (lineSegments.get(i).compareTo(min) == 0
-                    && lineSegments.get(i + 1).compareTo(max) == 0) {
+            Point start = lineSegments.get(i);
+            Point end = lineSegments.get(i + 1);
+            if ((start == p0 || start == p1)
+                    && (end == p2 || end == p0)) {
                 return false;
             }
         }
