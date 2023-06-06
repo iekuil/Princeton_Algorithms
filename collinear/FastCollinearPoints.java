@@ -7,7 +7,6 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.StdRandom;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,48 +15,7 @@ import java.util.Comparator;
 public class FastCollinearPoints {
 
     private ArrayList<LineSegment> segements;
-
-    private class QuickSort {
-        public void sort(Point[] points, Comparator<Point> comparator) {
-            StdRandom.shuffle(points);
-            sort(points, 0, points.length - 1, comparator);
-        }
-
-        private void sort(Point[] points, int lo, int hi, Comparator<Point> comparator) {
-            if (hi <= lo) {
-                return;
-            }
-
-            int j = partition(points, lo, hi, comparator);
-            sort(points, lo, j - 1, comparator);
-            sort(points, j + 1, hi, comparator);
-        }
-
-        private boolean less(Comparator<Point> comparator, Point p1, Point p2) {
-            return comparator.compare(p1, p2) < 0;
-        }
-
-        private void exch(Point[] points, int i, int j) {
-            Point tmp = points[i];
-            points[i] = points[j];
-            points[j] = tmp;
-        }
-
-        private int partition(Point[] points, int lo, int hi, Comparator<Point> comparator) {
-            int i = lo, j = hi + 1;
-            Point v = points[lo];
-            while (true) {
-                while (less(comparator, points[++i], v)) if (i == hi) break;
-                while (less(comparator, v, points[--j])) if (j == lo) break;
-
-                if (i >= j) break;
-                exch(points, i, j);
-            }
-            exch(points, lo, j);
-            return j;
-        }
-
-    }
+    private ArrayList<Point> lineSegments;
 
     // finds all line segments containing 4 or more points
     public FastCollinearPoints(Point[] points) {
@@ -66,8 +24,9 @@ public class FastCollinearPoints {
         }
 
         segements = new ArrayList<>();
+        lineSegments = new ArrayList<>();
 
-        Point[] samePoints = Arrays.copyOf(points, points.length);
+        Point[] samePoints = checkPoints(points);
         for (Point p0 : points) {
             // 遍历点集中的所有点，分别以每个点为基准点，依据基准点到每个点的斜率大小对数组进行排序
             // 对于排序后的数组，尽可能地多匹配具有相同斜率的点
@@ -78,69 +37,106 @@ public class FastCollinearPoints {
             // 检查线段经过的点的数量，至少四个
             // 将这些点组成新的数组，交给getMinPoint()和getMaxPoint()找出线段的端点
             // 检查segments是否已存在相应的线段
-            QuickSort qs = new QuickSort();
-            qs.sort(samePoints, p0.slopeOrder());
+            Comparator<Point> comparator = p0.slopeOrder();
+            Arrays.sort(samePoints, comparator);
 
-            int i, j;
-            for (i = 0; i < samePoints.length - 3; i += j) {
-                double slope0 = p0.slopeTo(samePoints[i]);
-                j = 0;
-                while (p0.slopeTo(samePoints[i + (++j)]) == slope0)
-                    if (i + j == samePoints.length - 1) break;
-                if (j < 3) {
-                    continue;
+            int i, j = 1;
+            for (i = 1; i < samePoints.length; i++) {
+
+                if (comparator.compare(samePoints[i], samePoints[i - 1]) == 0) {
+                    j++;
+                }
+                else {
+                    if (j < 3) {
+                        j = 1;
+                        continue;
+                    }
+
+                    Arrays.sort(samePoints, i - j, i);
+
+                    Point min;
+                    Point max;
+                    if (p0.compareTo(samePoints[i - j]) < 0) {
+                        min = p0;
+                    }
+                    else {
+                        min = samePoints[i - j];
+                    }
+
+                    if (p0.compareTo(samePoints[i - 1]) > 0) {
+                        max = p0;
+                    }
+                    else {
+                        max = samePoints[i - 1];
+                    }
+
+                    if (checkSegment(min, max)) {
+                        LineSegment newLine = new LineSegment(min, max);
+                        segements.add(newLine);
+                        lineSegments.add(min);
+                        lineSegments.add(max);
+                    }
+
+                    j = 1;
                 }
 
-                ArrayList<Point> tmpList = new ArrayList<>();
-                tmpList.add(p0);
-                tmpList.addAll(Arrays.asList(samePoints).subList(i, i + j));
+            }
+            if (j >= 3) {
+                Arrays.sort(samePoints, i - j, i);
 
-                Point min = getMinPoint(tmpList.toArray(new Point[0]));
-                Point max = getMaxPoint(tmpList.toArray(new Point[0]));
+                Point min;
+                Point max;
+                if (p0.compareTo(samePoints[i - j]) < 0) {
+                    min = p0;
+                }
+                else {
+                    min = samePoints[i - j];
+                }
 
-                LineSegment newLine = new LineSegment(min, max);
+                if (p0.compareTo(samePoints[i - 1]) > 0) {
+                    max = p0;
+                }
+                else {
+                    max = samePoints[i - 1];
+                }
 
-                if (checkSegmentExist(newLine)) {
+                if (checkSegment(min, max)) {
+                    LineSegment newLine = new LineSegment(min, max);
                     segements.add(newLine);
+                    lineSegments.add(min);
+                    lineSegments.add(max);
                 }
             }
         }
     }
 
-    private Point getMinPoint(Point[] points) {
-        if (points == null) {
-            throw new IllegalArgumentException("null for FastCollinearPoints.getMinPoint");
-        }
-        Point min = points[0];
-        for (Point p : points) {
-            if (p.compareTo(min) < 0) {
-                min = p;
-            }
-        }
-        return min;
-    }
-
-    private Point getMaxPoint(Point[] points) {
-        if (points == null) {
-            throw new IllegalArgumentException("null for FastCollinearPoints.getMinPoint");
-        }
-        Point max = points[0];
-        for (Point p : points) {
-            if (p.compareTo(max) > 0) {
-                max = p;
-            }
-        }
-        return max;
-    }
-
-    private boolean checkSegmentExist(LineSegment segment) {
-        String line = segment.toString();
-        for (LineSegment seg : segements) {
-            if (line.equals(seg.toString())) {
+    private boolean checkSegment(Point min, Point max) {
+        for (int i = 0; i < lineSegments.size(); i += 2) {
+            if (lineSegments.get(i).compareTo(min) == 0
+                    && lineSegments.get(i + 1).compareTo(max) == 0) {
                 return false;
             }
         }
         return true;
+    }
+
+    private Point[] checkPoints(Point[] points) {
+        Point[] myPoints = new Point[points.length];
+        for (int i = 0; i < points.length; i++) {
+            if (points[i] == null) {
+                throw new IllegalArgumentException(
+                        "null in array for FastCollinearPoints.FastCollinearPoints");
+            }
+            myPoints[i] = points[i];
+        }
+        Arrays.sort(myPoints);
+        for (int i = 0; i < myPoints.length; i++) {
+            if (i < myPoints.length - 1 && myPoints[i].compareTo(myPoints[i + 1]) == 0) {
+                throw new IllegalArgumentException(
+                        "duplicate points for FastCollinearPoints.FastCollinearPoints");
+            }
+        }
+        return myPoints;
     }
 
     // the number of line segments
