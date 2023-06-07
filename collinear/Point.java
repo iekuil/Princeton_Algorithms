@@ -23,8 +23,6 @@ public class Point implements Comparable<Point> {
     //      由于bySlope字段是内部类BySlope所使用的字段，它不需要被其他类直接访问。
     //      因此，将其访问修饰符设置为public是不必要的，并且会导致编译错误。
     //      根据Java的封装原则，应该尽量将字段声明为私有（private）或受保护（protected），以限制对其的直接访问，并通过公共的方法来访问和操作字段的值。
-    private final Comparator<Point> bySlope = new BySlope();
-
     private final int x;     // x-coordinate of this point
     private final int y;     // y-coordinate of this point
 
@@ -139,7 +137,7 @@ public class Point implements Comparable<Point> {
      */
     public Comparator<Point> slopeOrder() {
         /* YOUR CODE HERE */
-        return bySlope;
+        return new BySlope();
     }
 
 
