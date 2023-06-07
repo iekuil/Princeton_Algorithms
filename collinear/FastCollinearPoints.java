@@ -31,9 +31,9 @@ public class FastCollinearPoints {
             // 遍历点集中的所有点，分别以每个点为基准点，依据基准点到每个点的斜率大小对数组进行排序
             // 对于排序后的数组，尽可能地多匹配具有相同斜率的点
             //      同时使用两个数组下标i和j，
-            //      array[i]指向某一组点中的第一个
-            //      array[i+j]指向某一组点中的最后一个
-            //      j + 2即为当前具有相同斜率的点的数量（j + 1是数组中连续的、斜率相同的点，还有一个基准点p0）
+            //      array[i - j]指向某一组点中的第一个
+            //      array[i - 1]指向某一组点中的最后一个
+            //      j + 1即为当前具有相同斜率的点的数量（j是数组中连续的、斜率相同的点，还有一个基准点p0）
             // 检查线段经过的点的数量，至少四个
             // 将这些点组成新的数组，交给getMinPoint()和getMaxPoint()找出线段的端点
             // 检查segments是否已存在相应的线段
@@ -59,6 +59,11 @@ public class FastCollinearPoints {
                         lastSlope = thisSlope;
                         continue;
                     }
+
+                    // 由于p0是在所有的点中，由下到上、由左到右遍历
+                    // 当一个线段第一次被检查到时，p0必定是这个线段的起点
+                    // 若p0.compareTo返回非负值，说明p0位于这个线段的中段 -> 这个线段不是第一次出现 -> Segments中已经存在这个线段
+                    // 这个检查能够确保Segments中不会出现重复线段
                     if (p0.compareTo(samePoints[i - j]) < 0) {
                         tryingAddSegment(p0, samePoints[i - 1]);
                     }

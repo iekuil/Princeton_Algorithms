@@ -10,7 +10,6 @@ import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 
 public class BruteCollinearPoints {
 
@@ -33,7 +32,6 @@ public class BruteCollinearPoints {
         lineSegments = new ArrayList<>();
 
         for (int p1 = 0; p1 < myPoints.length; p1++) {
-            Comparator<Point> comparator = myPoints[p1].slopeOrder();
 
             for (int p2 = 0; p2 < myPoints.length; p2++) {
                 if (p2 == p1) {
