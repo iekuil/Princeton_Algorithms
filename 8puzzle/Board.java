@@ -4,6 +4,8 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.In;
+
 import java.util.ArrayList;
 
 public class Board {
@@ -189,27 +191,55 @@ public class Board {
     public Board twin() {
         int[][] tiles = new int[dimension][dimension];
 
-        int row, col;
+        int row = 0, col = 0;
         for (row = 0; row < dimension; row++) {
             for (col = 0; col < dimension; col++) {
                 tiles[row][col] = board[row][col];
             }
         }
-        tiles[0][0] = board[0][1];
-        tiles[0][1] = board[0][0];
+
+        int row1 = 0, col1 = 0, row2 = 0, col2 = 0;
+
+        for (row1 = 0; row1 < dimension; row1++) {
+            for (col1 = 0; col1 < dimension; col1++) {
+                if (tiles[row1][col1] != 0) {
+                    break;
+                }
+            }
+            if (col1 == dimension) continue;
+            if (tiles[row1][col1] != 0) {
+                break;
+            }
+        }
+
+        for (row2 = 0; row2 < dimension; row2++) {
+            for (col2 = 0; col2 < dimension; col2++) {
+                if ((tiles[row2][col2] != 0) && !(row1 == row2
+                        && col1 == col2)) {
+                    break;
+                }
+            }
+            if (col2 == dimension) continue;
+            if ((tiles[row2][col2] != 0) && !(row1 == row2
+                    && col1 == col2)) {
+                break;
+            }
+        }
+
+        tiles[row1][col1] = board[row2][col2];
+        tiles[row2][col2] = board[row1][col1];
 
         return new Board(tiles);
     }
 
     // unit testing (not graded)
     public static void main(String[] args) {
-        int row, col;
-        int[][] tiles = new int[5][5];
-        for (row = 0; row < 5; row++) {
-            for (col = 0; col < 5; col++) {
-                tiles[row][col] = row * 5 + col;
-            }
-        }
+        In in = new In(args[0]);
+        int n = in.readInt();
+        int[][] tiles = new int[n][n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                tiles[i][j] = in.readInt();
         Board test = new Board(tiles);
 
         System.out.println(test.toString());
