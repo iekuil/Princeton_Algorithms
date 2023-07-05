@@ -13,6 +13,7 @@ public class Board {
     private int hammingDistance;
     private int manhattanDistance;
 
+
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     // 可以假设tiles是一个n*n的数组
@@ -29,12 +30,8 @@ public class Board {
             for (j = 0; j < dimension; j++) {
                 board[i][j] = tiles[i][j];
 
-                if (i == dimension - 1 && j == dimension - 1) {
-                    if (board[i][j] != 0) {
-                        hammingDistance += 1;
-                    }
-                }
-                else if (board[i][j] != i * dimension + j + 1) {
+                if (board[i][j] != i * dimension + j + 1 && !(i == dimension - 1
+                        && j == dimension - 1)) {
                     hammingDistance += 1;
                 }
 
@@ -49,7 +46,9 @@ public class Board {
                     expectedRow = (board[i][j] - 1) / dimension;
                     expectedCol = (board[i][j] - 1) % dimension;
                 }
-                manhattanDistance += Math.abs(expectedRow - i) + Math.abs(expectedCol - j);
+                if (!(i == dimension - 1 && j == dimension - 1)) {
+                    manhattanDistance += Math.abs(expectedRow - i) + Math.abs(expectedCol - j);
+                }
             }
         }
 
