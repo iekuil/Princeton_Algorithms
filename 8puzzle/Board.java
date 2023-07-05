@@ -39,16 +39,14 @@ public class Board {
                 int expectedCol;
 
                 if (board[i][j] == 0) {
-                    expectedRow = dimension - 1;
-                    expectedCol = dimension - 1;
+                    expectedRow = i;
+                    expectedCol = j;
                 }
                 else {
                     expectedRow = (board[i][j] - 1) / dimension;
                     expectedCol = (board[i][j] - 1) % dimension;
                 }
-                if (!(i == dimension - 1 && j == dimension - 1)) {
-                    manhattanDistance += Math.abs(expectedRow - i) + Math.abs(expectedCol - j);
-                }
+                manhattanDistance += Math.abs(expectedRow - i) + Math.abs(expectedCol - j);
             }
         }
 
