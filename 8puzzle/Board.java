@@ -10,6 +10,8 @@ public class Board {
 
     private int dimension;
     private int[][] board;
+    private int hammingDistance;
+    private int manhattanDistance;
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
@@ -19,12 +21,38 @@ public class Board {
         dimension = tiles[0].length;
         board = new int[dimension][dimension];
 
+        hammingDistance = 0;
+        manhattanDistance = 0;
+
         int i, j;
         for (i = 0; i < dimension; i++) {
             for (j = 0; j < dimension; j++) {
                 board[i][j] = tiles[i][j];
+
+                if (i == dimension - 1 && j == dimension - 1) {
+                    if (board[i][j] != 0) {
+                        hammingDistance += 1;
+                    }
+                }
+                else if (board[i][j] != i * dimension + j + 1) {
+                    hammingDistance += 1;
+                }
+
+                int expectedRow;
+                int expectedCol;
+
+                if (board[i][j] == 0) {
+                    expectedRow = dimension - 1;
+                    expectedCol = dimension - 1;
+                }
+                else {
+                    expectedRow = (board[i][j] - 1) / dimension;
+                    expectedCol = (board[i][j] - 1) % dimension;
+                }
+                manhattanDistance += Math.abs(expectedRow - i) + Math.abs(expectedCol - j);
             }
         }
+
     }
 
     // string representation of this board
@@ -55,47 +83,12 @@ public class Board {
 
     // number of tiles out of place
     public int hamming() {
-        int distance = 0;
-        int i, j;
-
-        for (i = 0; i < dimension; i++) {
-            for (j = 0; j < dimension; j++) {
-                if (i == dimension - 1 && j == dimension - 1) {
-                    if (board[i][j] != 0) {
-                        distance += 1;
-                    }
-                    break;
-                }
-                else if (board[i][j] != i * dimension + j + 1) {
-                    distance += 1;
-                }
-            }
-        }
-        return distance;
+        return hammingDistance;
     }
 
     // sum of Manhattan distances between tiles and goal
     public int manhattan() {
-        int distance = 0;
-        int row, col;
-
-        for (row = 0; row < dimension; row++) {
-            for (col = 0; col < dimension; col++) {
-                int expectedRow;
-                int expectedCol;
-
-                if (board[row][col] == 0) {
-                    expectedRow = dimension - 1;
-                    expectedCol = dimension - 1;
-                }
-                else {
-                    expectedRow = (board[row][col] - 1) / dimension;
-                    expectedCol = (board[row][col] - 1) % dimension;
-                }
-                distance += Math.abs(expectedRow - row) + Math.abs(expectedCol - col);
-            }
-        }
-        return distance;
+        return manhattanDistance;
     }
 
     // is this board the goal board?
@@ -105,6 +98,9 @@ public class Board {
 
     // does this board equal y?
     public boolean equals(Object y) {
+        if (y == null) {
+            return false;
+        }
         if (y.getClass() != this.getClass()) {
             return false;
         }
