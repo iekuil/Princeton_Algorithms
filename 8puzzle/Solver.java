@@ -23,9 +23,49 @@ public class Solver {
     //     }
     // }
 
-    private static class ManhattanComparator implements Comparator<Board> {
-        public int compare(Board b1, Board b2) {
-            return Integer.compare(b1.manhattan(), b2.manhattan());
+    private class SearchNode {
+        private Board board;
+        private int currentMoves;
+        private SearchNode previous;
+
+        public SearchNode(Board board, int moves, SearchNode previous) {
+            this.board = board;
+            this.currentMoves = moves;
+            this.previous = previous;
+        }
+
+        public int manhattanPriority() {
+            return board.manhattan() + currentMoves;
+        }
+
+        public Board getBoard() {
+            return board;
+        }
+
+        public int getCurrentMoves() {
+            return currentMoves;
+        }
+
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (obj.getClass() != this.getClass()) {
+                return false;
+            }
+
+            SearchNode other = (SearchNode) obj;
+            if (this.board.equals(other.board) && this.currentMoves == other.currentMoves) {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    private static class ManhattanComparator implements Comparator<SearchNode> {
+        public int compare(SearchNode n1, SearchNode n2) {
+            return Integer.compare(n1.manhattanPriority(), n2.manhattanPriority());
         }
     }
 
@@ -37,52 +77,61 @@ public class Solver {
         }
 
         moves = 0;
+        int twinMoves = 0;
+
         solution = new ArrayList<>();
         solvable = true;
 
         Board twin = initial.twin();
-        Board searchNode = initial;
-        Board twinSearchNode = twin;
+        SearchNode searchNode = new SearchNode(initial, moves, null);
+        SearchNode twinSearchNode = new SearchNode(twin, moves, null);
 
-        Board previous = initial;
-        Board twinPrevious = twin;
+        MinPQ<SearchNode> gameTree = new MinPQ<>(new ManhattanComparator());
+        MinPQ<SearchNode> twinGameTree = new MinPQ<>(new ManhattanComparator());
 
-        MinPQ<Board> gameTree = new MinPQ<>(new ManhattanComparator());
-        MinPQ<Board> twinGameTree = new MinPQ<>(new ManhattanComparator());
+        gameTree.insert(searchNode);
+        twinGameTree.insert(twinSearchNode);
 
-        gameTree.insert(initial);
-        twinGameTree.insert(twin);
-
-        while ((!searchNode.isGoal()) && (!twinSearchNode.isGoal())) {
-            moves += 1;
-
-            previous = searchNode;
-            twinPrevious = twinSearchNode;
+        while (true) {
 
             searchNode = gameTree.delMin();
             twinSearchNode = twinGameTree.delMin();
 
-            solution.add(searchNode);
+            if ((searchNode.getBoard().isGoal()) || (twinSearchNode.getBoard().isGoal())) {
+                break;
+            }
+            moves = searchNode.getCurrentMoves() + 1;
+            twinMoves = twinSearchNode.getCurrentMoves() + 1;
 
-            ArrayList<Board> neighbors = (ArrayList<Board>) searchNode.neighbors();
+            ArrayList<Board> neighbors = (ArrayList<Board>) searchNode.getBoard().neighbors();
             for (Board neighbor : neighbors) {
-                if (!neighbor.equals(previous)) {
-                    gameTree.insert(neighbor);
+                SearchNode neighborNode = new SearchNode(neighbor, moves, searchNode);
+                if (!neighborNode.equals(searchNode.previous)) {
+                    gameTree.insert(neighborNode);
                 }
             }
 
-            ArrayList<Board> twinNeighbors = (ArrayList<Board>) twinSearchNode.neighbors();
+            ArrayList<Board> twinNeighbors = (ArrayList<Board>) twinSearchNode.getBoard()
+                                                                              .neighbors();
             for (Board twinNeighbor : twinNeighbors) {
-                if (!twinNeighbor.equals(twinPrevious)) {
-                    twinGameTree.insert(twinNeighbor);
+                SearchNode twinNeighborNode = new SearchNode(twinNeighbor, twinMoves,
+                                                             twinSearchNode);
+                if (!twinNeighborNode.equals(twinSearchNode.previous)) {
+                    twinGameTree.insert(twinNeighborNode);
                 }
             }
         }
 
-        if (twinSearchNode.isGoal()) {
+        if (twinSearchNode.getBoard().isGoal()) {
             moves = -1;
             solution = null;
             solvable = false;
+        }
+        else {
+            while (searchNode != null) {
+                solution.add(0, searchNode.getBoard());
+                searchNode = searchNode.previous;
+            }
         }
 
 
