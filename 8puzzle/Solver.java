@@ -26,16 +26,18 @@ public class Solver {
     private class SearchNode {
         private Board board;
         private int currentMoves;
+        private int priority;
         private SearchNode previous;
 
         public SearchNode(Board board, int moves, SearchNode previous) {
             this.board = board;
             this.currentMoves = moves;
             this.previous = previous;
+            this.priority = board.manhattan() + moves;
         }
 
         public int manhattanPriority() {
-            return board.manhattan() + currentMoves;
+            return priority;
         }
 
         public Board getBoard() {
@@ -55,7 +57,8 @@ public class Solver {
             }
 
             SearchNode other = (SearchNode) obj;
-            if (this.board.equals(other.board) && this.currentMoves == other.currentMoves) {
+            
+            if (this.board.equals(other.board)) {
                 return true;
             }
 
@@ -84,7 +87,7 @@ public class Solver {
 
         Board twin = initial.twin();
         SearchNode searchNode = new SearchNode(initial, moves, null);
-        SearchNode twinSearchNode = new SearchNode(twin, moves, null);
+        SearchNode twinSearchNode = new SearchNode(twin, twinMoves, null);
 
         MinPQ<SearchNode> gameTree = new MinPQ<>(new ManhattanComparator());
         MinPQ<SearchNode> twinGameTree = new MinPQ<>(new ManhattanComparator());

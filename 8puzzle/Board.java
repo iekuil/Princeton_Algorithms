@@ -108,6 +108,15 @@ public class Board {
         if (other.dimension() != dimension) {
             return false;
         }
+        if (this.hammingDistance != other.hammingDistance) {
+            return false;
+        }
+        if (this.manhattanDistance != other.manhattanDistance) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
 
         int i, j;
 
