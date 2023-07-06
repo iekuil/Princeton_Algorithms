@@ -98,12 +98,13 @@ public class Solver {
             twinSearchNode = twinGameTree.delMin();
 
             if ((searchNode.getBoard().isGoal()) || (twinSearchNode.getBoard().isGoal())) {
+                moves = searchNode.getCurrentMoves();
                 break;
             }
             moves = searchNode.getCurrentMoves() + 1;
             twinMoves = twinSearchNode.getCurrentMoves() + 1;
 
-            ArrayList<Board> neighbors = (ArrayList<Board>) searchNode.getBoard().neighbors();
+            Iterable<Board> neighbors = searchNode.getBoard().neighbors();
             for (Board neighbor : neighbors) {
                 SearchNode neighborNode = new SearchNode(neighbor, moves, searchNode);
                 if (!neighborNode.equals(searchNode.previous)) {
@@ -111,8 +112,8 @@ public class Solver {
                 }
             }
 
-            ArrayList<Board> twinNeighbors = (ArrayList<Board>) twinSearchNode.getBoard()
-                                                                              .neighbors();
+            Iterable<Board> twinNeighbors = twinSearchNode.getBoard()
+                                                          .neighbors();
             for (Board twinNeighbor : twinNeighbors) {
                 SearchNode twinNeighborNode = new SearchNode(twinNeighbor, twinMoves,
                                                              twinSearchNode);
