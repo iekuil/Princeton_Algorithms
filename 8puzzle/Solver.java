@@ -17,12 +17,8 @@ public class Solver {
     private ArrayList<Board> solution;
     private boolean solvable;
 
-    // private static class HammingComparator implements Comparator<Board> {
-    //     public int compare(Board b1, Board b2) {
-    //         return Integer.compare(b1.hamming(), b2.hamming());
-    //     }
-    // }
-
+    // 定义一个内部类作为搜索节点，
+    // 包含格板布局board、到这个格板的移动次数moves、当前节点的优先级priority、前一个节点previous
     private class SearchNode {
         private Board board;
         private int currentMoves;
@@ -33,6 +29,8 @@ public class Solver {
             this.board = board;
             this.currentMoves = moves;
             this.previous = previous;
+
+            // 优先级来自于manhattan距离和步数moves的和
             this.priority = board.manhattan() + moves;
         }
 
@@ -57,7 +55,7 @@ public class Solver {
             }
 
             SearchNode other = (SearchNode) obj;
-            
+
             if (this.board.equals(other.board)) {
                 return true;
             }
@@ -66,6 +64,8 @@ public class Solver {
         }
     }
 
+    // 定义一个比较器
+    // 用于比较用manhattan距离衡量的节点优先级
     private static class ManhattanComparator implements Comparator<SearchNode> {
         public int compare(SearchNode n1, SearchNode n2) {
             return Integer.compare(n1.manhattanPriority(), n2.manhattanPriority());
@@ -85,10 +85,14 @@ public class Solver {
         solution = new ArrayList<>();
         solvable = true;
 
+        // 创建一个twin，之后twin会和原格板同步求解，以确定原格板是否有解
         Board twin = initial.twin();
+
+        // 初始化当前搜索节点
         SearchNode searchNode = new SearchNode(initial, moves, null);
         SearchNode twinSearchNode = new SearchNode(twin, twinMoves, null);
 
+        // 初始化搜索节点的优先级队列，即gameTree
         MinPQ<SearchNode> gameTree = new MinPQ<>(new ManhattanComparator());
         MinPQ<SearchNode> twinGameTree = new MinPQ<>(new ManhattanComparator());
 
@@ -97,19 +101,28 @@ public class Solver {
 
         while (true) {
 
+            // 更新当前搜索节点
             searchNode = gameTree.delMin();
             twinSearchNode = twinGameTree.delMin();
 
+            // 检查求解是否完成
             if ((searchNode.getBoard().isGoal()) || (twinSearchNode.getBoard().isGoal())) {
                 moves = searchNode.getCurrentMoves();
                 break;
             }
+
+            // 在求解过程中，可能需要回溯到之前的某个节点
+            // 因此步数moves需要更新为比节点的步数多一步，而不是一直自增
             moves = searchNode.getCurrentMoves() + 1;
             twinMoves = twinSearchNode.getCurrentMoves() + 1;
 
+            // 将当前搜索节点的邻居加入到优先级队列中
             Iterable<Board> neighbors = searchNode.getBoard().neighbors();
             for (Board neighbor : neighbors) {
                 SearchNode neighborNode = new SearchNode(neighbor, moves, searchNode);
+
+                // 如果邻居和当前节点的前一个节点布局相同，不会加入队列
+                // 避免走“回头路”
                 if (!neighborNode.equals(searchNode.previous)) {
                     gameTree.insert(neighborNode);
                 }
@@ -126,6 +139,7 @@ public class Solver {
             }
         }
 
+        // 如果twin完成求解，说明原格板无解
         if (twinSearchNode.getBoard().isGoal()) {
             moves = -1;
             solution = null;

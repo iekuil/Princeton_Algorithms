@@ -12,6 +12,9 @@ public class Board {
 
     private int dimension;
     private int[][] board;
+
+    // 在Board的生存期间不会被改变，hamming距离和manhattan距离也不会被改变
+    // 只计算一次并保存下来，避免重复计算带来不必要的开销
     private int hammingDistance;
     private int manhattanDistance;
 
@@ -30,13 +33,17 @@ public class Board {
         int i, j;
         for (i = 0; i < dimension; i++) {
             for (j = 0; j < dimension; j++) {
+
+                // 将二维数组拷贝到对象的私有成员中
                 board[i][j] = tiles[i][j];
 
+                // 计算每个格板的hamming距离，忽视空格占位
                 if (board[i][j] != i * dimension + j + 1 && !(i == dimension - 1
                         && j == dimension - 1)) {
                     hammingDistance += 1;
                 }
 
+                // 计算每个格板的manhattan距离，同样忽视空格占位
                 int expectedRow;
                 int expectedCol;
 
@@ -97,14 +104,21 @@ public class Board {
 
     // does this board equal y?
     public boolean equals(Object y) {
+
+        // 判断是否空指针
         if (y == null) {
             return false;
         }
+
+        // 判断对象是否同一类型
         if (y.getClass() != this.getClass()) {
             return false;
         }
 
         Board other = (Board) y;
+
+        // 分别先检测数组长度、hamming距离、manhattan距离
+        // 初步判断两个board是否相等，减少进入两层循环的次数
         if (other.dimension() != dimension) {
             return false;
         }
@@ -118,8 +132,8 @@ public class Board {
             return true;
         }
 
+        // 使用二重循环，遍历检查数组中的每个位置是否相等
         int i, j;
-
         for (i = 0; i < dimension; i++) {
             for (j = 0; j < dimension; j++) {
                 if (board[i][j] != other.board[i][j]) {
@@ -142,6 +156,7 @@ public class Board {
         int i, j;
         int row = 0, col = 0;
 
+        // 查找0（空格占位）所在的行和列
         for (i = 0; i < dimension; i++) {
             for (j = 0; j < dimension; j++) {
                 neighbor[i][j] = board[i][j];
@@ -152,6 +167,7 @@ public class Board {
             }
         }
 
+        // 尝试将空格上下左右的格板移动到空格所在位置，得到一个邻居
         if (row != 0) {
             neighbor[row - 1][col] = board[row][col];
             neighbor[row][col] = board[row - 1][col];
@@ -200,6 +216,7 @@ public class Board {
     public Board twin() {
         int[][] tiles = new int[dimension][dimension];
 
+        // 拷贝格板的布局
         int row = 0, col = 0;
         for (row = 0; row < dimension; row++) {
             for (col = 0; col < dimension; col++) {
@@ -209,6 +226,7 @@ public class Board {
 
         int row1 = 0, col1 = 0, row2 = 0, col2 = 0;
 
+        // 从左到右、从上到下查找第二个不为0的格板位置从左到右、从上到下查找第一个不为0的格板位置
         for (row1 = 0; row1 < dimension; row1++) {
             for (col1 = 0; col1 < dimension; col1++) {
                 if (tiles[row1][col1] != 0) {
@@ -221,6 +239,7 @@ public class Board {
             }
         }
 
+        // 从左到右、从上到下查找第二个不为0的格板位置
         for (row2 = 0; row2 < dimension; row2++) {
             for (col2 = 0; col2 < dimension; col2++) {
                 if ((tiles[row2][col2] != 0) && !(row1 == row2
@@ -235,6 +254,7 @@ public class Board {
             }
         }
 
+        // 交换两个格板的位置
         tiles[row1][col1] = board[row2][col2];
         tiles[row2][col2] = board[row1][col1];
 
