@@ -74,7 +74,7 @@ public class KdTree {
             if (point == null) {
                 throw new IllegalArgumentException("null for Node.setPoint");
             }
-            if (this.rect.distanceTo(point) != 0) {
+            if (this.rect.distanceSquaredTo(point) != 0) {
                 throw new IllegalArgumentException(
                         "in Node.setPoint: point locates not in the rect");
             }
@@ -153,12 +153,16 @@ public class KdTree {
 
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException("null for KdTree.insert");
+        }
         put(root, p);
     }
 
     private void put(Node node, Point2D p) {
         if (node.noPoint()) {
             node.setPoint(p);
+            node.size = 1;
             return;
         }
         int cmp = node.compareToPoint(p);
@@ -185,6 +189,9 @@ public class KdTree {
 
     // does the set contain point p?
     public boolean contains(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException("null for KdTree.contains");
+        }
         return contains(root, p);
     }
 
@@ -221,9 +228,6 @@ public class KdTree {
 
         // 初始设置
         StdDraw.enableDoubleBuffering();
-        StdDraw.setPenRadius(0.005);
-        StdDraw.setXscale(-0.5, 1.5);
-        StdDraw.setYscale(-0.5, 1.5);
 
         // 绘制外框
         StdDraw.line(0, 0, 0, 1);
@@ -264,6 +268,9 @@ public class KdTree {
 
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) {
+            throw new IllegalArgumentException("null for KdTree.range");
+        }
         ArrayList<Point2D> points = new ArrayList<>();
         range(root, rect, points);
         return points;
@@ -276,7 +283,7 @@ public class KdTree {
         if (node.noPoint()) {
             return;
         }
-        if (rect.distanceTo(node.point) == 0) {
+        if (rect.distanceSquaredTo(node.point) == 0) {
             points.add(node.point);
         }
         if (rect.intersects(node.lChild.rect)) {
@@ -289,6 +296,9 @@ public class KdTree {
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException("null for KdTree.nearest");
+        }
         return nearest(root, p);
     }
 
@@ -330,18 +340,18 @@ public class KdTree {
 
         if (currentNearest == null) {
             currentNearest = node.point;
-            currentDistance = currentNearest.distanceTo(p);
+            currentDistance = currentNearest.distanceSquaredTo(p);
         }
         else {
-            currentDistance = currentNearest.distanceTo(p);
-            double splitPointDistance = node.point.distanceTo(p);
+            currentDistance = currentNearest.distanceSquaredTo(p);
+            double splitPointDistance = node.point.distanceSquaredTo(p);
             if (splitPointDistance < currentDistance) {
                 currentNearest = node.point;
                 currentDistance = splitPointDistance;
             }
         }
 
-        double rightRectDistance = node.rChild.rect.distanceTo(p);
+        double rightRectDistance = node.rChild.rect.distanceSquaredTo(p);
 
         if (currentDistance < rightRectDistance) {
             return currentNearest;
@@ -353,7 +363,7 @@ public class KdTree {
             return currentNearest;
         }
 
-        double rightNearestDistance = rightNearest.distanceTo(p);
+        double rightNearestDistance = rightNearest.distanceSquaredTo(p);
 
         if (rightNearestDistance < currentDistance) {
             currentNearest = rightNearest;
@@ -376,7 +386,6 @@ public class KdTree {
                 try {
                     double number1 = Double.parseDouble(tokens[0]);
                     double number2 = Double.parseDouble(tokens[1]);
-                    
                     lastPoint = new Point2D(number1, number2);
                     kdTree.insert(lastPoint);
                 }

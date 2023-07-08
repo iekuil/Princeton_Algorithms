@@ -54,7 +54,6 @@ public class PointSET {
     // draw all points to standard draw
     public void draw() {
         StdDraw.enableDoubleBuffering();
-        StdDraw.setPenRadius(0.01);
         StdDraw.setXscale(0, 1);
         StdDraw.setYscale(0, 1);
         for (Point2D p : set) {
@@ -70,7 +69,7 @@ public class PointSET {
         }
         ArrayList<Point2D> pointsInside = new ArrayList<>();
         for (Point2D p : set) {
-            if (rect.distanceTo(p) == 0) {
+            if (rect.distanceSquaredTo(p) == 0) {
                 pointsInside.add(p);
             }
         }
@@ -85,8 +84,8 @@ public class PointSET {
         double minDistance = Double.POSITIVE_INFINITY;
         Point2D neighbor = null;
         for (Point2D pSet : set) {
-            if (pSet.distanceTo(p) < minDistance) {
-                minDistance = pSet.distanceTo(p);
+            if (pSet.distanceSquaredTo(p) < minDistance) {
+                minDistance = pSet.distanceSquaredTo(p);
                 neighbor = pSet;
             }
         }
