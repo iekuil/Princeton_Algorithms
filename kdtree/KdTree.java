@@ -376,7 +376,7 @@ public class KdTree {
                 try {
                     double number1 = Double.parseDouble(tokens[0]);
                     double number2 = Double.parseDouble(tokens[1]);
-                    // 执行你的逻辑操作，例如打印这两个数字
+                    
                     lastPoint = new Point2D(number1, number2);
                     kdTree.insert(lastPoint);
                 }
