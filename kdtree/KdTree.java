@@ -127,6 +127,24 @@ public class KdTree {
         }
     }
 
+    private class NearestResult {
+        private Point2D point;
+        private double distance;
+
+        public NearestResult(Point2D point, double distance) {
+            this.point = point;
+            this.distance = distance;
+        }
+
+        public Point2D getPoint() {
+            return point;
+        }
+
+        public double getDistance() {
+            return distance;
+        }
+    }
+
     // construct an empty set of points
     public KdTree() {
         root = new Node(new RectHV(0, 0, 1, 1), true);
@@ -252,7 +270,6 @@ public class KdTree {
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.point(node.point.x(), node.point.y());
 
-        StdDraw.setPenRadius(0.005);
         if (node.verticle) {
             StdDraw.setPenColor(StdDraw.RED);
             StdDraw.line(node.point.x(), node.rect.ymin(), node.point.x(), node.rect.ymax());
@@ -283,7 +300,7 @@ public class KdTree {
         if (node.noPoint()) {
             return;
         }
-        if (rect.distanceSquaredTo(node.point) == 0) {
+        if (rect.contains(node.point)) {
             points.add(node.point);
         }
         if (rect.intersects(node.lChild.rect)) {
@@ -299,77 +316,82 @@ public class KdTree {
         if (p == null) {
             throw new IllegalArgumentException("null for KdTree.nearest");
         }
-        return nearest(root, p);
+        return nearest(root, p, new NearestResult(null, Double.POSITIVE_INFINITY)).point;
     }
 
-    private Point2D nearest(Node node, Point2D p) {
-        // 剪枝的策略是：
-        //    计算当前最近的点到p的距离，
-        //    并和p到另一个子节点的rect的距离进行比较，
-        //    如果前者更小，就说明不用再到另一个子节点以及下面的子树进行查找
+    private NearestResult nearest(Node node, Point2D target, NearestResult lastRes) {
+
+        // 1. 计算四个距离：
+        //       分割点到目标点的距离
+        //       截止上一层得到的最近点到目标点的距离
+        //       左方块到目标点的距离
+        //       右方块到目标点的距离
         //
-        // 最多可能需要比较三个point：
-        //    当前node的point，
-        //    左子树递归计算并返回的point，
-        //    右子树递归计算并返回的point，
-        //
-        // 具体实现：
-        //    如果当前node为空指针，返回null
-        //    如果当前node中不含有point，返回null
-        //    接下来先查找左子树：
-        //       如果左子树返回null，当前最近点为分割点
-        //       如果左子树返回了一个有效的点，将当前最近点设置为左子树最近点与分割点中距离目标更近的那一个
-        //    将当前最近点到右子树的矩形的距离进行比较，
-        //       小于：返回当前最近点
-        //       大于等于：
-        //          查找右子树
-        //             若右子树返回null，返回当前最近点
-        //             若右子树返回有效的点，比较得出当前树的最近点，并返回最近点
+        // 2. 比较前两个点到目标点的距离，确定到这一层为止的最近点
+        // 3. 比较两个方块到目标点的距离，确定（假如要访问子树时的）访问顺序
+        // 4. 假如最近点到目标点的距离小于某个方块到目标点的距离，不再查找该子树
+        //       否则按照3中确定的顺序查找第一个子树，并更新最近点
+        // 5. 仿照4进行检查并决定是否查找第二个子树及更新最近点
 
         if (node == null) {
-            return null;
+            return lastRes;
         }
         if (node.noPoint()) {
-            return null;
+            return lastRes;
         }
+        NearestResult currentRes;
 
-        Point2D currentNearest;
-        double currentDistance;
+        double splitPointDistance = node.point.distanceSquaredTo(target);
 
-        currentNearest = nearest(node.lChild, p);
-
-        if (currentNearest == null) {
-            currentNearest = node.point;
-            currentDistance = currentNearest.distanceSquaredTo(p);
+        if (splitPointDistance < lastRes.distance) {
+            currentRes = new NearestResult(node.point, splitPointDistance);
         }
         else {
-            currentDistance = currentNearest.distanceSquaredTo(p);
-            double splitPointDistance = node.point.distanceSquaredTo(p);
-            if (splitPointDistance < currentDistance) {
-                currentNearest = node.point;
-                currentDistance = splitPointDistance;
-            }
+            currentRes = lastRes;
         }
 
-        double rightRectDistance = node.rChild.rect.distanceSquaredTo(p);
+        double lChildDistance = node.lChild.rect.distanceSquaredTo(target);
+        double rChildDistance = node.rChild.rect.distanceSquaredTo(target);
 
-        if (currentDistance < rightRectDistance) {
-            return currentNearest;
+        Node firstChild, secondChild;
+        double firstDistance, secondDistance;
+
+        if (lChildDistance < rChildDistance) {
+            firstChild = node.lChild;
+            secondChild = node.rChild;
+
+            firstDistance = lChildDistance;
+            secondDistance = rChildDistance;
+        }
+        else {
+            firstChild = node.rChild;
+            secondChild = node.lChild;
+
+            firstDistance = rChildDistance;
+            secondDistance = lChildDistance;
         }
 
-        Point2D rightNearest = nearest(node.rChild, p);
-
-        if (rightNearest == null) {
-            return currentNearest;
+        if (currentRes.distance < firstDistance) {
+            return currentRes;
         }
 
-        double rightNearestDistance = rightNearest.distanceSquaredTo(p);
+        NearestResult firstChildRes = nearest(firstChild, target, currentRes);
 
-        if (rightNearestDistance < currentDistance) {
-            currentNearest = rightNearest;
+        if (firstChildRes.distance < currentRes.distance) {
+            currentRes = firstChildRes;
         }
 
-        return currentNearest;
+        if (currentRes.distance < secondDistance) {
+            return currentRes;
+        }
+
+        NearestResult secondChildRes = nearest(secondChild, target, currentRes);
+
+        if (secondChildRes.distance < currentRes.distance) {
+            currentRes = secondChildRes;
+        }
+
+        return currentRes;
     }
 
     // unit testing of the methods (optional)
