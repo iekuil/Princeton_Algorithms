@@ -6,36 +6,228 @@
 
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.util.ArrayList;
+
 public class SAP {
+
+    private Digraph graph;
+
+    private class MutatedBFS {
+        private boolean[] markedBySet1;
+        private boolean[] markedBySet2;
+        private int[] lengthFromSet1;
+        private int[] lengthFromSet2;
+
+        private int sca;
+        private int shortestPathLen;
+
+        private class Node {
+            private int v;
+            private boolean fromSet1;
+
+            public Node(int v, boolean fromSet1) {
+                this.v = v;
+                this.fromSet1 = fromSet1;
+            }
+
+            public int getV() {
+                return v;
+            }
+
+            public boolean isFromSet1() {
+                return fromSet1;
+            }
+        }
+
+        public MutatedBFS(Digraph G, Iterable<Integer> srcSet1, Iterable<Integer> srcSet2) {
+            int numberOfV = G.V();
+
+            sca = -1;
+
+            markedBySet1 = new boolean[numberOfV];
+            markedBySet2 = new boolean[numberOfV];
+
+            lengthFromSet1 = new int[numberOfV];
+            lengthFromSet2 = new int[numberOfV];
+
+            bfs(G, srcSet1, srcSet2);
+
+            if (sca == -1) {
+                shortestPathLen = -1;
+            }
+            else {
+                for (int v : srcSet1) {
+                    if (v == sca) {
+                        shortestPathLen = lengthFromSet2[v];
+                        return;
+                    }
+                }
+                for (int v : srcSet2) {
+                    if (v == sca) {
+                        shortestPathLen = lengthFromSet1[v];
+                        return;
+                    }
+                }
+
+                shortestPathLen = lengthFromSet1[sca] + lengthFromSet2[sca] + 1;
+            }
+        }
+
+        public int sca() {
+            return sca;
+        }
+
+        public int shortestPathLength() {
+            return shortestPathLen;
+        }
+
+        private void bfs(Digraph G, Iterable<Integer> srcSet1, Iterable<Integer> srcSet2) {
+            Queue<Node> queue = new Queue<>();
+            for (int v : srcSet1) {
+                queue.enqueue(new Node(v, true));
+                markedBySet1[v] = true;
+                lengthFromSet1[v] = 0;
+            }
+            for (int v : srcSet2) {
+                queue.enqueue(new Node(v, false));
+                markedBySet2[v] = false;
+                lengthFromSet2[v] = 0;
+            }
+
+            while (!queue.isEmpty()) {
+                Node currentNode = queue.dequeue();
+                int v = currentNode.getV();
+                boolean fromSet1 = currentNode.isFromSet1();
+                int currentLength = getLength(v, fromSet1);
+
+                for (int w : G.adj(v)) {
+                    if (!marked(w, fromSet1)) {
+                        mark(w, fromSet1);
+                        setLength(w, fromSet1, currentLength + 1);
+                        queue.enqueue(new Node(w, fromSet1));
+                    }
+                    if (isAncestor(w)) {
+                        sca = w;
+                        break;
+                    }
+                }
+                if (sca != -1) {
+                    break;
+                }
+            }
+        }
+
+        private void mark(int v, boolean fromSet1) {
+            if (fromSet1) {
+                markedBySet1[v] = true;
+            }
+            else {
+                markedBySet2[v] = true;
+            }
+        }
+
+        private boolean marked(int v, boolean fromSet1) {
+            if (fromSet1) {
+                return markedBySet1[v];
+            }
+            else {
+                return markedBySet2[v];
+            }
+        }
+
+        private int getLength(int v, boolean fromSet1) {
+            if (!marked(v, fromSet1)) {
+                return -1;
+            }
+
+            if (fromSet1) {
+                return lengthFromSet1[v];
+            }
+            else {
+                return lengthFromSet2[v];
+            }
+        }
+
+        private void setLength(int v, boolean fromSet1, int length) {
+
+            if (fromSet1) {
+                lengthFromSet1[v] = length;
+            }
+            else {
+                lengthFromSet2[v] = length;
+            }
+        }
+
+        private boolean isAncestor(int v) {
+            return markedBySet1[v] && markedBySet2[v];
+        }
+
+
+    }
 
     // constructor takes a digraph (not necessarily a DAG)
     public SAP(Digraph G) {
+        if (G == null) {
+            throw new IllegalArgumentException("");
+        }
+        this.graph = G;
+    }
+
+    // 通过调用重载的另一个length实现
+    // length of shortest ancestral path between v and w; -1 if no such path
+    public int length(int v, int w) {
+        ArrayList<Integer> set1 = new ArrayList<Integer>();
+        set1.add(v);
+
+        ArrayList<Integer> set2 = new ArrayList<>();
+        set2.add(w);
+
+        return length(set1, set2);
+    }
+
+    // 通过调用重载的另一个ancestor实现
+    // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
+    public int ancestor(int v, int w) {
+        ArrayList<Integer> set1 = new ArrayList<Integer>();
+        set1.add(v);
+
+        ArrayList<Integer> set2 = new ArrayList<>();
+        set2.add(w);
+
+        return ancestor(set1, set2);
     }
 
     // 通过调用ancestor方法完成，
     // ancestor方法中在进行bfs时要记录当前路径长度
     // 方便length方法计算最近路径长度
-    // length of shortest ancestral path between v and w; -1 if no such path
-    public int length(int v, int w) {
-    }
-
-    // 从两个节点出发，交替进行BFS
-    // 将两个节点各自访问到的祖先加入到同一个符号表中
-    // 如果当一个节点尝试向符号表中添加祖先节点时发现祖先节点已经存在，
-    // 该祖先节点即为最近的共同祖先节点
-    // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
-    public int ancestor(int v, int w) {
-    }
-
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
+        MutatedBFS mbfs = new MutatedBFS(graph, v, w);
+        return mbfs.shortestPathLength();
     }
 
+    //  两个集合的最近祖先节点的定义：
+    //     从两个集合中各自任取一个节点，
+    //     在所有可能的节点对中，某对节点的最短路径所对应的共同祖先节点即为所求
+    //
+    //  对于从单点出发的BFS，
+    //  队列中的初始节点只有一个，
+    //  在这个情景中我们则需要将两个集合的所有节点都加入到队列中作为初始节点，
+    //  并用额外的数据结构标记某个节点属于哪个集合的祖先
+    //  当出现某个节点同时拥有两个标记时，
+    //  即找到了目标的共同祖先节点
+    //
+    //  由于采用BFS，
+    //  当某个集合中的节点第一次访问到某个祖先节点时的路径长度即为该集合到该祖先节点的最短路径长度
+    //
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
+        MutatedBFS mbfs = new MutatedBFS(graph, v, w);
+        return mbfs.sca();
     }
 
     // do unit testing of this class

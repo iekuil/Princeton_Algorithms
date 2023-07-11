@@ -12,6 +12,17 @@ public class Outcast {
     public Outcast(WordNet wordnet) {
     }
 
+    // 输入是一个文件名
+    // 需要从文件中读取多个字符串
+    // 每个字符串都可能属于多个synset，
+    // 即，文件中的每个字符串 <---> 由多个节点号组成的Iterable对象
+    //
+    // 两两组合，
+    // 通过调用WordNet的SAP，求出所有Iterable对象之间的距离
+    //
+    // 对于一个字符串，它到其余所有字符串的距离即是它所在的Iterable到其余每个Iterable的距离之和
+    // 总距离最大的字符串即为所求
+    //
     // given an array of WordNet nouns, return an outcast
     public String outcast(String[] nouns) {
     }
