@@ -85,7 +85,13 @@
     &quot;last_opened_file_path&quot;: &quot;E:/code/algorithms/wordnet&quot;
   }
 }</component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.SAP">
+    <configuration name="SAP" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="SAP" />
+      <module name="Algorithms, Part II" />
+      <option name="PROGRAM_PARAMETERS" value="digraph1.txt" />
+      <method v="2" />
+    </configuration>
     <configuration name="WordNet" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="WordNet" />
       <module name="Algorithms, Part II" />
@@ -140,6 +146,16 @@
           <url>file://$PROJECT_DIR$/WordNet.java</url>
           <line>152</line>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/SAP.java</url>
+          <line>104</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/SAP.java</url>
+          <line>82</line>
+          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

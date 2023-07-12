@@ -14,7 +14,25 @@ import java.util.ArrayList;
 
 public class SAP {
 
-    private Digraph graph;
+    private final Digraph graph;
+
+    private class Node {
+        private final int v;
+        private final boolean fromSet1;
+
+        public Node(int v, boolean fromSet1) {
+            this.v = v;
+            this.fromSet1 = fromSet1;
+        }
+
+        public int getV() {
+            return v;
+        }
+
+        public boolean isFromSet1() {
+            return fromSet1;
+        }
+    }
 
     private class MutatedBFS {
         private boolean[] markedBySet1;
@@ -25,28 +43,12 @@ public class SAP {
         private int sca;
         private int shortestPathLen;
 
-        private class Node {
-            private int v;
-            private boolean fromSet1;
-
-            public Node(int v, boolean fromSet1) {
-                this.v = v;
-                this.fromSet1 = fromSet1;
-            }
-
-            public int getV() {
-                return v;
-            }
-
-            public boolean isFromSet1() {
-                return fromSet1;
-            }
-        }
 
         public MutatedBFS(Digraph G, Iterable<Integer> srcSet1, Iterable<Integer> srcSet2) {
             int numberOfV = G.V();
 
             sca = -1;
+            shortestPathLen = -1;
 
             markedBySet1 = new boolean[numberOfV];
             markedBySet2 = new boolean[numberOfV];
@@ -56,25 +58,6 @@ public class SAP {
 
             bfs(G, srcSet1, srcSet2);
 
-            if (sca == -1) {
-                shortestPathLen = -1;
-            }
-            else {
-                for (int v : srcSet1) {
-                    if (v == sca) {
-                        shortestPathLen = lengthFromSet2[v];
-                        return;
-                    }
-                }
-                for (int v : srcSet2) {
-                    if (v == sca) {
-                        shortestPathLen = lengthFromSet1[v];
-                        return;
-                    }
-                }
-
-                shortestPathLen = lengthFromSet1[sca] + lengthFromSet2[sca] + 1;
-            }
         }
 
         public int sca() {
@@ -94,8 +77,13 @@ public class SAP {
             }
             for (int v : srcSet2) {
                 queue.enqueue(new Node(v, false));
-                markedBySet2[v] = false;
+                markedBySet2[v] = true;
                 lengthFromSet2[v] = 0;
+                if (isAncestor(v)) {
+                    sca = v;
+                    shortestPathLen = lengthFromSet1[v] + lengthFromSet2[v];
+                    return;
+                }
             }
 
             while (!queue.isEmpty()) {
@@ -111,11 +99,15 @@ public class SAP {
                         queue.enqueue(new Node(w, fromSet1));
                     }
                     if (isAncestor(w)) {
-                        sca = w;
-                        break;
+                        int currentPathLen = lengthFromSet1[w] + lengthFromSet2[w];
+
+                        if (sca == -1 || currentPathLen < shortestPathLen) {
+                            sca = w;
+                            shortestPathLen = currentPathLen;
+                        }
                     }
                 }
-                if (sca != -1) {
+                if (sca != -1 && currentLength > 2 * getLength(sca, fromSet1)) {
                     break;
                 }
             }
@@ -174,7 +166,7 @@ public class SAP {
         if (G == null) {
             throw new IllegalArgumentException("");
         }
-        this.graph = G;
+        this.graph = new Digraph(G);
     }
 
     // 通过调用重载的另一个length实现
@@ -206,9 +198,12 @@ public class SAP {
     // 方便length方法计算最近路径长度
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
+        checkArgument(v);
+        checkArgument(w);
         MutatedBFS mbfs = new MutatedBFS(graph, v, w);
         return mbfs.shortestPathLength();
     }
+
 
     //  两个集合的最近祖先节点的定义：
     //     从两个集合中各自任取一个节点，
@@ -226,8 +221,25 @@ public class SAP {
     //
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
+        checkArgument(v);
+        checkArgument(w);
         MutatedBFS mbfs = new MutatedBFS(graph, v, w);
         return mbfs.sca();
+    }
+
+    private void checkArgument(Iterable<Integer> v) {
+        if (v == null) {
+            throw new IllegalArgumentException("");
+        }
+        int max = graph.V() - 1;
+        for (Integer i : v) {
+            if (i == null) {
+                throw new IllegalArgumentException("");
+            }
+            if (i < 0 || i > max) {
+                throw new IllegalArgumentException("");
+            }
+        }
     }
 
     // do unit testing of this class
