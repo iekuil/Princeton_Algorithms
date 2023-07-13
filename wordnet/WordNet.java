@@ -7,65 +7,26 @@
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.DirectedCycle;
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.TreeSet;
 
 public class WordNet {
 
     // string到所在的synset的id的映射
     // 一个string可能存在于多个synset中
-    private HashMap<String, ArrayList<Integer>> stringToId;
+    private final HashMap<String, ArrayList<Integer>> stringToId;
 
     // synset的id到synset中的具体字符串的映射
     // ArrayList相当于长度可变的数组
     // 使用ArrayList的随机访问来提高查找效率
-    private ArrayList<String> idToSynset;
+    private final ArrayList<String> idToSynset;
 
     // SAP类的一个对象，
     // 用于distance和sap方法的实现
-    private SAP sap;
-
-    // 存储所有名词的synset id号
-    // 使用红黑树的符号表是为了提高查找效率以使isNoun能够满足对数级别的性能要求
-    private TreeSet<Integer> nounsSynsetId;
-
-    private class MutatedBFS {
-        private boolean[] marked;
-
-        public MutatedBFS(Digraph G, Iterable<Integer> nounSet, TreeSet<Integer> nounsSynsetId) {
-            marked = new boolean[G.V()];
-
-            mbfs(G, nounSet, nounsSynsetId);
-        }
-
-        private void mbfs(Digraph G, Iterable<Integer> nounSet, TreeSet<Integer> nounsSynsetId) {
-            Queue<Integer> queue = new Queue<>();
-
-            for (int s : nounSet) {
-                marked[s] = true;
-                queue.enqueue(s);
-                nounsSynsetId.add(s);
-            }
-
-            while (!queue.isEmpty()) {
-                int v = queue.dequeue();
-                for (int w : G.adj(v)) {
-                    if (!marked[w]) {
-                        marked[w] = true;
-                        queue.enqueue(w);
-                        nounsSynsetId.add(w);
-                    }
-                }
-            }
-        }
-    }
-
+    private final SAP sap;
 
     // 构造函数：
     //    建立节点编号和synset内字符串的双向映射：
@@ -81,9 +42,6 @@ public class WordNet {
     //    （用于distance和sap方法）
     //       利用得到的Digraph对象初始化一个SAP对象
     //
-    //    （用于isNoun方法）
-    //       围绕该图进行DFS
-    //
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
         if (synsets == null || hypernyms == null) {
@@ -92,7 +50,6 @@ public class WordNet {
 
         stringToId = new HashMap<>();
         idToSynset = new ArrayList<>();
-        nounsSynsetId = new TreeSet<>();
 
         In synsetsInput = new In(synsets);
 
@@ -140,7 +97,6 @@ public class WordNet {
             throw new IllegalArgumentException("");
         }
         sap = new SAP(G);
-        MutatedBFS mbfs = new MutatedBFS(G.reverse(), stringToId.get("noun"), nounsSynsetId);
     }
 
 
@@ -151,9 +107,8 @@ public class WordNet {
     // returns all WordNet nouns
     public Iterable<String> nouns() {
         ArrayList<String> nouns = new ArrayList<>();
-        for (int id : nounsSynsetId) {
-            String[] synset = idToSynset.get(id).split(" ");
-            Collections.addAll(nouns, synset);
+        for (String key : stringToId.keySet()) {
+            nouns.add(key);
         }
         return nouns;
     }
@@ -175,10 +130,8 @@ public class WordNet {
         if (ids == null) {
             return false;
         }
-        for (int id : ids) {
-            if (nounsSynsetId.contains(id)) {
-                return true;
-            }
+        if (stringToId.containsKey(word)) {
+            return true;
         }
         return false;
     }
