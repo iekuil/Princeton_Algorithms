@@ -92,9 +92,21 @@ public class WordNet {
             }
         }
 
+        // 判断有无环 -> 是否是DAG
         DirectedCycle dc = new DirectedCycle(G);
         if (dc.hasCycle()) {
             throw new IllegalArgumentException("");
+        }
+
+        // 判断图中是否有多个入度为0的节点 -> DAG是否有多个起点
+        int zeroInDegreeCounts = 0;
+        for (int i = 0; i < nodesNum; i++) {
+            if (G.indegree(i) != 0 && G.outdegree(i) == 0) {
+                zeroInDegreeCounts += 1;
+                if (zeroInDegreeCounts > 1) {
+                    throw new IllegalArgumentException("");
+                }
+            }
         }
         sap = new SAP(G);
     }

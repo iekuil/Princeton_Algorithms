@@ -9,7 +9,7 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class Outcast {
     // constructor takes a WordNet object
-    private WordNet wordNet;
+    private final WordNet wordNet;
 
     public Outcast(WordNet wordnet) {
         this.wordNet = wordnet;
@@ -29,24 +29,20 @@ public class Outcast {
     // given an array of WordNet nouns, return an outcast
     public String outcast(String[] nouns) {
         int num = nouns.length;
-        int[][] distance = new int[num][num];
+        int[] totalDistance = new int[num];
 
         for (int i = 0; i < num; i++) {
-            distance[i][i] = 0;
             for (int j = i + 1; j < num; j++) {
                 int d = wordNet.distance(nouns[i], nouns[j]);
-                distance[i][j] = d;
-                distance[j][i] = d;
+                totalDistance[i] += d;
+                totalDistance[j] += d;
             }
         }
 
-        int[] totalDistance = new int[num];
+
         int max = 0;
 
         for (int i = 0; i < num; i++) {
-            for (int j = 0; j < num; j++) {
-                totalDistance[i] += distance[i][j];
-            }
             if (totalDistance[i] > totalDistance[max]) {
                 max = i;
             }
