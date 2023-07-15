@@ -5,6 +5,7 @@
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.Picture;
+import edu.princeton.cs.algs4.Stack;
 
 public class SeamCarver {
 
@@ -31,7 +32,7 @@ public class SeamCarver {
         int width = newPicture.width();
         int height = newPicture.height();
 
-        double[][] newEnergy = new double[width][height];
+        double[][] newEnergy = new double[height][width];
 
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -118,12 +119,120 @@ public class SeamCarver {
         // 构成一个无环、加权、无负权重的DAG
         // 寻找一条有效的接缝等价于寻找该图中从虚拟起点到虚拟终点的最短路径，
         // 总耗时与E+V成正比，相当于和宽x高成正比
+
+        int height = height();
+        int width = width();
+
+        double[][] distTo = new double[height][width];
+        int[][] edgeTo = new int[height][width];
+
+        for (int i = 0; i < height; i++) {
+            edgeTo[i][0] = 0;
+            distTo[i][0] = 0;
+        }
+
+        for (int col = 0; col < width - 1; col++) {
+            for (int row = 0; row < height; row++) {
+                if (row != 0) {
+                    if (distTo[row - 1][col + 1] > distTo[row][col] + energy[row][col]) {
+                        edgeTo[row - 1][col + 1] = row;
+                        distTo[row - 1][col + 1] = distTo[row][col] + energy[row][col];
+                    }
+                }
+                if (distTo[row][col + 1] > distTo[row][col] + energy[row][col]) {
+                    edgeTo[row][col + 1] = row;
+                    distTo[row][col + 1] = distTo[row][col] + energy[row][col];
+                }
+                if (row != height - 1) {
+                    if (distTo[row + 1][col + 1] > distTo[row][col] + energy[row][col]) {
+                        edgeTo[row + 1][col + 1] = row;
+                        distTo[row + 1][col + 1] = distTo[row][col] + energy[row][col];
+                    }
+                }
+            }
+        }
+
+        int end = 0;
+        for (int row = 0; row < height; row++) {
+            if (distTo[row][width - 1] < distTo[end][width - 1]) {
+                end = row;
+            }
+        }
+
+        Stack<Integer> stack = new Stack<>();
+        stack.push(end);
+        int last = end;
+        for (int col = width - 1; col > 0; col--) {
+            stack.push(edgeTo[last][col]);
+            last = edgeTo[last][col];
+        }
+
+        int[] res = new int[width];
+        for (int i = 0; i < width; i++) {
+            res[i] = stack.pop();
+        }
+
+        return res;
     }
 
     // 要求最坏情况下具有宽x高的时间复杂度
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
         // 类似于findHorizontalSeam的实现
+
+        int height = height();
+        int width = width();
+
+        double[][] distTo = new double[height][width];
+        int[][] edgeTo = new int[height][width];
+
+        for (int i = 0; i < width; i++) {
+            edgeTo[0][i] = 0;
+            distTo[0][i] = 0;
+        }
+
+        for (int row = 0; row < height - 1; row++) {
+            for (int col = 0; col < width; col++) {
+                if (col != 0) {
+                    if (distTo[row + 1][col - 1] > distTo[row][col] + energy[row][col]) {
+                        edgeTo[row + 1][col - 1] = row;
+                        distTo[row + 1][col - 1] = distTo[row][col] + energy[row][col];
+                    }
+                }
+                if (distTo[row + 1][col] > distTo[row][col] + energy[row][col]) {
+                    edgeTo[row + 1][col] = row;
+                    distTo[row + 1][col] = distTo[row][col] + energy[row][col];
+                }
+                if (col != width - 1) {
+                    if (distTo[row + 1][col + 1] > distTo[row][col] + energy[row][col]) {
+                        edgeTo[row + 1][col + 1] = row;
+                        distTo[row + 1][col + 1] = distTo[row][col] + energy[row][col];
+                    }
+                }
+            }
+        }
+
+        int end = 0;
+        for (int col = 0; col < height; col++) {
+            if (distTo[height - 1][col] < distTo[height - 1][end]) {
+                end = col;
+            }
+        }
+
+        Stack<Integer> stack = new Stack<>();
+        stack.push(end);
+        int last = end;
+        for (int row = height - 1; row > 0; row--) {
+            stack.push(edgeTo[row][last]);
+            last = edgeTo[row][last];
+        }
+
+        int[] res = new int[height];
+        for (int i = 0; i < height; i++) {
+            res[i] = stack.pop();
+        }
+
+        return res;
     }
 
     // 要求最坏情况下具有宽x高的时间复杂度
