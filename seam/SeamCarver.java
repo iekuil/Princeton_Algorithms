@@ -36,7 +36,7 @@ public class SeamCarver {
 
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                if (i == 0 || i == width - 1 || j == 0 || j == height - 1) {
+                if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
                     newEnergy[i][j] = 1000;
                 }
                 else {
@@ -106,7 +106,7 @@ public class SeamCarver {
         if (y < 0 || y > this.picture.height() - 1) {
             throw new IllegalArgumentException("");
         }
-        return energy[x][y];
+        return energy[y][x];
     }
 
     // 要求最坏情况下具有宽x高的时间复杂度
@@ -129,6 +129,14 @@ public class SeamCarver {
         for (int i = 0; i < height; i++) {
             edgeTo[i][0] = 0;
             distTo[i][0] = 0;
+        }
+
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                if (col != 0) {
+                    distTo[row][col] = Double.POSITIVE_INFINITY;
+                }
+            }
         }
 
         for (int col = 0; col < width - 1; col++) {
@@ -186,26 +194,29 @@ public class SeamCarver {
         double[][] distTo = new double[height][width];
         int[][] edgeTo = new int[height][width];
 
-        for (int i = 0; i < width; i++) {
-            edgeTo[0][i] = 0;
-            distTo[0][i] = 0;
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                if (row != 0) {
+                    distTo[row][col] = Double.POSITIVE_INFINITY;
+                }
+            }
         }
 
         for (int row = 0; row < height - 1; row++) {
             for (int col = 0; col < width; col++) {
                 if (col != 0) {
                     if (distTo[row + 1][col - 1] > distTo[row][col] + energy[row][col]) {
-                        edgeTo[row + 1][col - 1] = row;
+                        edgeTo[row + 1][col - 1] = col;
                         distTo[row + 1][col - 1] = distTo[row][col] + energy[row][col];
                     }
                 }
                 if (distTo[row + 1][col] > distTo[row][col] + energy[row][col]) {
-                    edgeTo[row + 1][col] = row;
+                    edgeTo[row + 1][col] = col;
                     distTo[row + 1][col] = distTo[row][col] + energy[row][col];
                 }
                 if (col != width - 1) {
                     if (distTo[row + 1][col + 1] > distTo[row][col] + energy[row][col]) {
-                        edgeTo[row + 1][col + 1] = row;
+                        edgeTo[row + 1][col + 1] = col;
                         distTo[row + 1][col + 1] = distTo[row][col] + energy[row][col];
                     }
                 }
@@ -308,6 +319,9 @@ public class SeamCarver {
                 }
             }
         }
+
+        this.picture = newPicture;
+        getAndSetEnergy(newPicture);
     }
 
     private void checkSeam(int[] seam) {
