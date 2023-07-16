@@ -24,8 +24,8 @@ public class SeamCarver {
         if (picture == null) {
             throw new IllegalArgumentException("");
         }
-        this.picture = picture;
-        getAndSetEnergy(picture);
+        this.picture = new Picture(picture);
+        getAndSetEnergy(this.picture);
     }
 
     private void getAndSetEnergy(Picture newPicture) {
@@ -82,7 +82,7 @@ public class SeamCarver {
     // 要求最坏情况下具有宽x高的时间复杂度
     // current picture
     public Picture picture() {
-        return picture;
+        return new Picture(this.picture);
     }
 
     // 要求最坏情况下具有常数级的时间复杂度
@@ -224,7 +224,7 @@ public class SeamCarver {
         }
 
         int end = 0;
-        for (int col = 0; col < height; col++) {
+        for (int col = 0; col < width; col++) {
             if (distTo[height - 1][col] < distTo[height - 1][end]) {
                 end = col;
             }
@@ -263,11 +263,12 @@ public class SeamCarver {
         if (this.picture.height() <= 1) {
             throw new IllegalArgumentException("");
         }
-        checkSeam(seam);
+
 
         int oldWidth = this.picture.width();
         int oldHeight = this.picture.height();
 
+        checkSeam(seam, oldHeight - 1);
         int newHeight = oldHeight - 1;
 
         Picture newPicture = new Picture(oldWidth, newHeight);
@@ -301,17 +302,18 @@ public class SeamCarver {
         if (this.picture.width() <= 1) {
             throw new IllegalArgumentException("");
         }
-        checkSeam(seam);
 
         int oldWidth = this.picture.width();
         int oldHeight = this.picture.height();
+
+        checkSeam(seam, oldWidth - 1);
         int newWidth = oldWidth - 1;
 
         Picture newPicture = new Picture(newWidth, oldHeight);
 
         for (int i = 0; i < oldHeight; i++) {
             for (int j = 0; j < newWidth; j++) {
-                if (j > seam[i]) {
+                if (j >= seam[i]) {
                     newPicture.setRGB(j, i, this.picture.getRGB(j + 1, i));
                 }
                 else {
@@ -324,11 +326,14 @@ public class SeamCarver {
         getAndSetEnergy(newPicture);
     }
 
-    private void checkSeam(int[] seam) {
+    private void checkSeam(int[] seam, int max) {
         int last = seam[0];
+        if (last > max || last < 0) {
+            throw new IllegalArgumentException("");
+        }
         for (int i = 1; i < seam.length; i++) {
             int current = seam[i];
-            if (Math.abs(current - last) > 1) {
+            if (Math.abs(current - last) > 1 || current > max || current < 0) {
                 throw new IllegalArgumentException("");
             }
             last = seam[i];
