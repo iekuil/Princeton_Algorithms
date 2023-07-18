@@ -4,11 +4,15 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.FlowEdge;
+import edu.princeton.cs.algs4.FlowNetwork;
+import edu.princeton.cs.algs4.FordFulkerson;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class BaseballElimination {
@@ -28,6 +32,8 @@ public class BaseballElimination {
     // 从转化成图中定点和边的关系，构建FlowNetwork对象
     // 将FlowNetwork交给FordFulkerson处理，解决最大流最小割问题
     // 最后检查从源节点s出发的有向边是否达到容量上限
+
+    private int teamsNumber;
 
     // 所有队伍的当前胜场
     private int[] wins;
@@ -54,14 +60,15 @@ public class BaseballElimination {
     // 记录某个队伍在数学意义上是否已经被淘汰
     private boolean[] elimated;
 
-    // 记录使特定队伍被淘汰的割集
-    private Iterable<Integer>[] mincuts;
+    // 记录使特定队伍被淘汰的割集,
+    private boolean[][] mincuts;
 
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
         In in = new In(filename);
         int n = in.readInt();
 
+        teamsNumber = n;
         wins = new int[n];
         losses = new int[n];
         remainings = new int[n];
@@ -69,54 +76,196 @@ public class BaseballElimination {
         idToString = new String[n];
         stringToId = new HashMap<>();
         elimated = new boolean[n];
-        mincuts = new ArrayList<Integer>[n];
-
+        mincuts = new boolean[n][n];
 
         for (int i = 0; i < n; i++) {
             String line = StdIn.readLine();
             String[] splitLine = line.split("\\s+");
             String name = splitLine[0];
-            int win = Integer.parseInt(splitLine[1]);
-            int lose = Integer.parseInt(splitLine[2]);
 
+            idToString[i] = name;
+            stringToId.put(name, i);
+
+            wins[i] = Integer.parseInt(splitLine[1]);
+            losses[i] = Integer.parseInt(splitLine[2]);
+            remainings[i] = Integer.parseInt(splitLine[3]);
+
+            for (int j = 0; j < n; j++) {
+                remainingGames[i][j] = Integer.parseInt(splitLine[4 + j]);
+            }
         }
+    }
+
+    private boolean isTrivialSituation(int id) {
+        boolean elimatedFlag = false;
+        for (int i = 0; i < teamsNumber; i++) {
+            if (i == id) {
+                continue;
+            }
+            if (wins[i] > wins[id] + remainings[id]) {
+                elimatedFlag = true;
+                mincuts[id][i] = true;
+            }
+        }
+        return elimatedFlag;
+    }
+
+    private void testATeam(int id) {
+        // 这个函数需要检查序号为id的队伍是否在数学意义上已经被淘汰
+        // 并将结果写入elimated和mincuts这两个数组中相应的位置
+        //
+        // 首先生成相应的流网络图FlowNetwork对象
+        // 流网络图中共有teamsNumber - 1个队伍节点
+        // 最多有 n*(n-1)/2个比赛节点
+        //
+        // 在图中，
+        // 令节点0到节点n-1-1为队伍节点
+        // 比赛节点编号从n - 1开始，最后一个比赛节点编号是n-1 + n(n-1)/2 - 1
+        // 源节点编号为n-1 + n(n-1)/2，汇节点编号为n-1 + n(n-1)/2 + 1
+        //
+        // 利用
+        // int gameId = 0
+        // for (int i = 0.....) {
+        //    for (int j = i + 1......) {
+        //        ...
+        //        gameId += 1;
+        //    }
+        //  }
+        // 的形式，
+        // 将所有比赛节点连接到相关的两个队伍节点,
+        // 同时将源节点连接到所有比赛节点，
+
+        if (isTrivialSituation(id)) {
+            return;
+        }
+
+        int teamVerticesNumber = teamsNumber - 1;
+        int gameVerticesNumber = (teamVerticesNumber * (teamVerticesNumber - 1)) / 2;
+
+        FlowNetwork flowNet = new FlowNetwork(teamVerticesNumber + gameVerticesNumber + 1 + 1);
+
+        int[] verticeidToId = new int[teamVerticesNumber];
+
+        for (int i = 0; i < teamsNumber; i++) {
+            if (i < id) {
+                verticeidToId[i] = i;
+            }
+            else if (i == id) {
+                continue;
+            }
+            else {
+                verticeidToId[i - 1] = i;
+            }
+        }
+
+        int gameVerticeId = 0;
+        int srcId = gameVerticesNumber + teamVerticesNumber;
+        int terminateId = srcId + 1;
+
+        for (int i = 0; i < teamVerticesNumber; i++) {
+            for (int j = i + 1; j < teamVerticesNumber; j++) {
+                FlowEdge gameToTeam1 = new FlowEdge(gameVerticeId, gameVerticesNumber + i,
+                                                    Double.POSITIVE_INFINITY);
+                flowNet.addEdge(gameToTeam1);
+
+                FlowEdge gameToTeam2 = new FlowEdge(gameVerticeId, gameVerticesNumber + j,
+                                                    Double.POSITIVE_INFINITY);
+                flowNet.addEdge(gameToTeam2);
+
+                FlowEdge srcTogame = new FlowEdge(srcId, gameVerticeId,
+                                                  remainingGames[verticeidToId[i]][verticeidToId[j]]);
+                flowNet.addEdge(srcTogame);
+
+                gameVerticeId += 1;
+            }
+        }
+
+        for (int i = 0; i < teamVerticesNumber; i++) {
+            int maxWins = wins[id] + remainings[id] - wins[verticeidToId[i]];
+            FlowEdge teamToTerminate = new FlowEdge(gameVerticesNumber + i, terminateId, maxWins);
+            flowNet.addEdge(teamToTerminate);
+        }
+
+        FordFulkerson solvement = new FordFulkerson(flowNet, srcId, terminateId);
+
+        boolean elimatedFlag = false;
+        for (FlowEdge e : flowNet.adj(srcId)) {
+            int gameId = e.to();
+            if (e.residualCapacityTo(gameId) != 0) {
+                elimatedFlag = true;
+                for (FlowEdge fe : flowNet.adj(gameId)) {
+                    if (fe.from() != gameId) {
+                        continue;
+                    }
+                    else {
+                        mincuts[id][verticeidToId[fe.to() - gameVerticesNumber]] = true;
+                    }
+                }
+            }
+        }
+        elimated[id] = elimatedFlag;
     }
 
     // number of teams
     public int numberOfTeams() {
+        return teamsNumber;
     }
 
     // all teams
     public Iterable<String> teams() {
+        return Arrays.asList(idToString.clone());
     }
 
     // 给定队名，返回指定的队伍id
-    private int getTeamId(String team) {
-
+    private int checkAndGetTeamId(String team) {
+        if (team == null) {
+            throw new IllegalArgumentException("");
+        }
+        if (!stringToId.containsKey(team)) {
+            throw new IllegalArgumentException("");
+        }
+        return stringToId.get(team);
     }
 
     // number of wins for given team
     public int wins(String team) {
+        return wins[checkAndGetTeamId(team)];
     }
 
     // number of losses for given team
     public int losses(String team) {
+        return losses[checkAndGetTeamId(team)];
     }
 
     // number of losses for given team
     public int remaining(String team) {
+        return remainings[checkAndGetTeamId(team)];
     }
 
     // number of remaining games between team1 and team2
     public int against(String team1, String team2) {
+        return remainingGames[checkAndGetTeamId(team1)][checkAndGetTeamId(team2)];
     }
 
     // is given team eliminated?
     public boolean isEliminated(String team) {
+        return elimated[checkAndGetTeamId(team)];
     }
 
     // subset R of teams that eliminates given team; null if not eliminated
     public Iterable<String> certificateOfElimination(String team) {
+        int id = checkAndGetTeamId(team);
+        if (!elimated[id]) {
+            return null;
+        }
+        ArrayList<String> subset = new ArrayList<>();
+
+        for (int i = 0; i < teamsNumber; i++) {
+            if (mincuts[id][i]) {
+                subset.add(idToString[i]);
+            }
+        }
+        return subset;
     }
 
     public static void main(String[] args) {
