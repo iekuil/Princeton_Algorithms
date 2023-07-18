@@ -8,7 +8,6 @@ import edu.princeton.cs.algs4.FlowEdge;
 import edu.princeton.cs.algs4.FlowNetwork;
 import edu.princeton.cs.algs4.FordFulkerson;
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
@@ -33,29 +32,29 @@ public class BaseballElimination {
     // 将FlowNetwork交给FordFulkerson处理，解决最大流最小割问题
     // 最后检查从源节点s出发的有向边是否达到容量上限
 
-    private int teamsNumber;
+    private final int teamsNumber;
 
     // 所有队伍的当前胜场
-    private int[] wins;
+    private final int[] wins;
 
     // 所有队伍的当前败场
-    private int[] losses;
+    private final int[] losses;
 
     // 所有队伍的剩余场次
     // 不能通过remainingGames计算出来的原因是，
     // remainingGames这个二维矩阵给出的是某队伍与当前小组中的其他队伍的剩余比赛情况，
     // 而一支队伍可能与小组外的队伍进行比赛，
     // 因此总的剩余场次可能多于与当前小组中其他队伍进行的比赛的总场次
-    private int[] remainings;
+    private final int[] remainings;
 
     // 队伍两两之间即将进行的比赛
-    private int[][] remainingGames;
+    private final int[][] remainingGames;
 
     // 用字符串数组实现id到字符串之间的映射
-    private String[] idToString;
+    private final String[] idToString;
 
     // 实现字符串到队伍id之间的映射
-    private HashMap<String, Integer> stringToId;
+    private final HashMap<String, Integer> stringToId;
 
     // 记录某个队伍在数学意义上是否已经被淘汰
     private boolean[] elimated;
@@ -66,7 +65,7 @@ public class BaseballElimination {
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
         In in = new In(filename);
-        int n = in.readInt();
+        int n = Integer.parseInt(in.readLine());
 
         teamsNumber = n;
         wins = new int[n];
@@ -79,8 +78,8 @@ public class BaseballElimination {
         mincuts = new boolean[n][n];
 
         for (int i = 0; i < n; i++) {
-            String line = StdIn.readLine();
-            String[] splitLine = line.split("\\s+");
+            String line = in.readLine();
+            String[] splitLine = line.trim().split("\\s+");
             String name = splitLine[0];
 
             idToString[i] = name;
@@ -93,6 +92,10 @@ public class BaseballElimination {
             for (int j = 0; j < n; j++) {
                 remainingGames[i][j] = Integer.parseInt(splitLine[4 + j]);
             }
+        }
+
+        for (int i = 0; i < teamsNumber; i++) {
+            testATeam(i);
         }
     }
 
@@ -107,6 +110,7 @@ public class BaseballElimination {
                 mincuts[id][i] = true;
             }
         }
+        elimated[id] = elimatedFlag;
         return elimatedFlag;
     }
 
@@ -186,6 +190,7 @@ public class BaseballElimination {
             flowNet.addEdge(teamToTerminate);
         }
 
+
         FordFulkerson solvement = new FordFulkerson(flowNet, srcId, terminateId);
 
         boolean elimatedFlag = false;
@@ -193,17 +198,17 @@ public class BaseballElimination {
             int gameId = e.to();
             if (e.residualCapacityTo(gameId) != 0) {
                 elimatedFlag = true;
-                for (FlowEdge fe : flowNet.adj(gameId)) {
-                    if (fe.from() != gameId) {
-                        continue;
-                    }
-                    else {
-                        mincuts[id][verticeidToId[fe.to() - gameVerticesNumber]] = true;
-                    }
-                }
             }
         }
         elimated[id] = elimatedFlag;
+
+        if (elimatedFlag) {
+            for (int i = 0; i < teamVerticesNumber; i++) {
+                if (solvement.inCut(i + gameVerticesNumber)) {
+                    mincuts[id][verticeidToId[i]] = true;
+                }
+            }
+        }
     }
 
     // number of teams
