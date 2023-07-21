@@ -12,7 +12,7 @@ public class MyTrieST {
     // 查找节点（采用循环实现，从缓存节点开始，并更新缓存
 
     private static int radix = 26;
-    private Node root;
+    private final Node root;
 
     private class Node {
         private boolean isTail;

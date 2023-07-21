@@ -32,7 +32,7 @@ public class BoggleSolver {
     //             使用一维的bag数组，每个bag对象存储该index对应的节点的邻接节点的编号
 
 
-    private MyTrieST dictionary;
+    private final MyTrieST dictionary;
 
     // Initializes the data structure using the given array of strings as the dictionary.
     // (You can assume each word in the dictionary contains only the uppercase letters A through Z.)
@@ -107,14 +107,13 @@ public class BoggleSolver {
 
         SET<String> res = new SET<>();
 
+        // 对board中的每个字符进行DFS，并将过程中得到的有效字符串保存下来
         for (int i = 0; i < length; i++) {
-            MyDFS dfs = new MyDFS(board1d, adj, dictionary, i, res);
+            MyDFS dfs = new MyDFS(res);
+            dfs.process(board1d, adj, dictionary, i);
         }
 
         return res;
-
-        // 对board中的每个字符进行DFS，并将过程中得到的有效字符串保存下来
-
     }
 
     // Returns the score of the given word if it is in the dictionary, zero otherwise.
