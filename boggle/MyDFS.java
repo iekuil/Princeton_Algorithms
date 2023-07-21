@@ -1,4 +1,5 @@
 import edu.princeton.cs.algs4.Bag;
+import edu.princeton.cs.algs4.SET;
 
 import java.util.TreeSet;
 
@@ -12,11 +13,11 @@ public class MyDFS {
     private char[] board; // board本身不会变，为了避免重复计算应该使用传入的adj作参数
     private Bag<Integer>[] adj; // 一个board的邻接关系不会变，但是会多次生成MyDFS对象以不同的起点进行搜索，
 
-    private Bag<String> res;
+    private SET<String> res;
 
     // 需要传入MtTrieST作为参数
 
-    public MyDFS(char[] board, Bag<Integer>[] adj, MyTrieST dictionary, int src, Bag<String> res) {
+    public MyDFS(char[] board, Bag<Integer>[] adj, MyTrieST dictionary, int src, SET<String> res) {
 
         if (board == null || adj == null || dictionary == null || res == null) {
             throw new IllegalArgumentException("");
@@ -61,7 +62,7 @@ public class MyDFS {
         TreeSet<Integer> marked = (TreeSet<Integer>) lastMarked.clone();
         marked.add(v);
 
-        if (subDict.isStrTail()) {
+        if (subDict.isStrTail() && current.length() >= 3) {
             res.add(current);
         }
         for (int w : adj[v]) {
@@ -72,9 +73,9 @@ public class MyDFS {
 
     }
 
-    // 用bag应该就行，底层是扩容数组，常数级别的插入效率
-    // 如果用红黑树/哈希表开销估计更大
-    public Bag<String> getRes() {
+    // 需要不重复的插入
+    // 使用SET
+    public SET<String> getRes() {
         return res;
     }
 }

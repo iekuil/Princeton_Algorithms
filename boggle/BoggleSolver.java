@@ -6,6 +6,7 @@
 
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.SET;
 import edu.princeton.cs.algs4.StdOut;
 
 public class BoggleSolver {
@@ -83,10 +84,25 @@ public class BoggleSolver {
                 if (j != width - 1) {
                     adj[index].add(i * width + j + 1);
                 }
+
+                if (i != 0 && j != 0) {
+                    adj[index].add((i - 1) * width + j - 1);
+                }
+
+                if (i != 0 && j != width - 1) {
+                    adj[index].add((i - 1) * width + j + 1);
+                }
+
+                if (i != height - 1 && j != 0) {
+                    adj[index].add((i + 1) * width + j - 1);
+                }
+                if (i != height - 1 && j != width - 1) {
+                    adj[index].add((i + 1) * width + j + 1);
+                }
             }
         }
 
-        Bag<String> res = new Bag<>();
+        SET<String> res = new SET<>();
 
         for (int i = 0; i < length; i++) {
             MyDFS dfs = new MyDFS(board1d, adj, dictionary, i, res);
