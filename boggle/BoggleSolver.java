@@ -4,6 +4,10 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.Bag;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdOut;
+
 public class BoggleSolver {
 
     // 用tries存储字典字符串
@@ -26,7 +30,6 @@ public class BoggleSolver {
 
 
     private MyTrieST dictionary;
-    private char[] board;
 
     // Initializes the data structure using the given array of strings as the dictionary.
     // (You can assume each word in the dictionary contains only the uppercase letters A through Z.)
@@ -52,17 +55,44 @@ public class BoggleSolver {
 
         int length = width * height;
 
-        this.board = new char[length];
+        char[] board1d = new char[length];
 
-        // 将board转化成一维数组
+
+        Bag<Integer>[] adj = (Bag<Integer>[]) new Bag[length];
+
+
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                this.board[i * width + j] = board.getLetter(i, j);
+                int index = i * width + j;
+
+                // 将board转化成一维数组
+                board1d[index] = board.getLetter(i, j);
+
+                // 创建邻接关系
+                adj[index] = new Bag<>();
+
+                if (i != 0) {
+                    adj[index].add((i - 1) * width + j);
+                }
+                if (i != height - 1) {
+                    adj[index].add((i + 1) * width + j);
+                }
+                if (j != 0) {
+                    adj[index].add(i * width + j - 1);
+                }
+                if (j != width - 1) {
+                    adj[index].add(i * width + j + 1);
+                }
             }
         }
 
-        // 创建邻接关系
+        Bag<String> res = new Bag<>();
 
+        for (int i = 0; i < length; i++) {
+            MyDFS dfs = new MyDFS(board1d, adj, dictionary, i, res);
+        }
+
+        return res;
         // 对board中的每个字符进行DFS，并将过程中得到的有效字符串保存下来
 
     }
@@ -101,4 +131,18 @@ public class BoggleSolver {
         }
 
     }
+
+    public static void main(String[] args) {
+        In in = new In(args[0]);
+        String[] dictionary = in.readAllStrings();
+        BoggleSolver solver = new BoggleSolver(dictionary);
+        BoggleBoard board = new BoggleBoard(args[1]);
+        int score = 0;
+        for (String word : solver.getAllValidWords(board)) {
+            StdOut.println(word);
+            score += solver.scoreOf(word);
+        }
+        StdOut.println("Score = " + score);
+    }
+
 }

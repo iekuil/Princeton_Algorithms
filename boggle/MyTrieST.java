@@ -60,6 +60,7 @@ public class MyTrieST {
             int index = modLetterA(s.charAt(d));
             node = node.next[index];
         }
+        return false;
     }
 
     // 判断s是否是Trie中某个有效字符串的一部分
@@ -75,6 +76,7 @@ public class MyTrieST {
             int index = modLetterA(s.charAt(d));
             node = node.next[index];
         }
+        return true;
     }
 
     // 根据给定的字符串查找子节点，并生成一个以该子节点为根节点的Trie
