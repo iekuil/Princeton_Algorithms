@@ -63,7 +63,7 @@ public class MyDFS {
         marked.add(v);
 
         if (subDict.isStrTail() && current.length() >= 3) {
-            res.add(current);
+            res.add(current.replace("Q", "QU"));
         }
         for (int w : adj[v]) {
             if (!marked.contains(w)) {

@@ -40,7 +40,7 @@ public class BoggleSolver {
         }
         this.dictionary = new MyTrieST();
         for (String word : dictionary) {
-            this.dictionary.put(word);
+            this.dictionary.put(word.replace("QU", "Q"));
         }
     }
 
@@ -58,9 +58,7 @@ public class BoggleSolver {
 
         char[] board1d = new char[length];
 
-
         Bag<Integer>[] adj = (Bag<Integer>[]) new Bag[length];
-
 
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -119,7 +117,7 @@ public class BoggleSolver {
         if (word == null) {
             throw new IllegalArgumentException("");
         }
-        if (!dictionary.contains(word)) {
+        if (!dictionary.contains(word.replace("QU", "Q"))) {
             return 0;
         }
         int length = word.length();
@@ -155,8 +153,9 @@ public class BoggleSolver {
         BoggleBoard board = new BoggleBoard(args[1]);
         int score = 0;
         for (String word : solver.getAllValidWords(board)) {
-            StdOut.println(word);
-            score += solver.scoreOf(word);
+            int tmpScore = solver.scoreOf(word);
+            StdOut.printf("%s : %d\n", word, tmpScore);
+            score += tmpScore;
         }
         StdOut.println("Score = " + score);
     }
