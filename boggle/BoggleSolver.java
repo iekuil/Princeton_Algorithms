@@ -40,6 +40,9 @@ public class BoggleSolver {
         }
         this.dictionary = new MyTrieST();
         for (String word : dictionary) {
+            if (word.contains("Q") && (!word.contains("QU"))) {
+                continue;
+            }
             this.dictionary.put(word.replace("QU", "Q"));
         }
     }

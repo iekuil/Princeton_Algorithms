@@ -62,8 +62,9 @@ public class MyDFS {
         TreeSet<Integer> marked = (TreeSet<Integer>) lastMarked.clone();
         marked.add(v);
 
-        if (subDict.isStrTail() && current.length() >= 3) {
-            res.add(current.replace("Q", "QU"));
+        String tmp = current.replace("Q", "QU");
+        if (subDict.isStrTail() && tmp.length() >= 3) {
+            res.add(tmp);
         }
         for (int w : adj[v]) {
             if (!marked.contains(w)) {
