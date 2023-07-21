@@ -9,6 +9,8 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.SET;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.util.ArrayList;
+
 public class BoggleSolver {
 
     // 用tries存储字典字符串
@@ -61,7 +63,7 @@ public class BoggleSolver {
 
         char[] board1d = new char[length];
 
-        Bag<Integer>[] adj = (Bag<Integer>[]) new Bag[length];
+        ArrayList<Bag<Integer>> adj = new ArrayList<Bag<Integer>>();
 
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -71,34 +73,34 @@ public class BoggleSolver {
                 board1d[index] = board.getLetter(i, j);
 
                 // 创建邻接关系
-                adj[index] = new Bag<>();
-
+                // adj.set(index, new Bag<Integer>());
+                adj.add(new Bag<>());
                 if (i != 0) {
-                    adj[index].add((i - 1) * width + j);
+                    adj.get(index).add((i - 1) * width + j);
                 }
                 if (i != height - 1) {
-                    adj[index].add((i + 1) * width + j);
+                    adj.get(index).add((i + 1) * width + j);
                 }
                 if (j != 0) {
-                    adj[index].add(i * width + j - 1);
+                    adj.get(index).add(i * width + j - 1);
                 }
                 if (j != width - 1) {
-                    adj[index].add(i * width + j + 1);
+                    adj.get(index).add(i * width + j + 1);
                 }
 
                 if (i != 0 && j != 0) {
-                    adj[index].add((i - 1) * width + j - 1);
+                    adj.get(index).add((i - 1) * width + j - 1);
                 }
 
                 if (i != 0 && j != width - 1) {
-                    adj[index].add((i - 1) * width + j + 1);
+                    adj.get(index).add((i - 1) * width + j + 1);
                 }
 
                 if (i != height - 1 && j != 0) {
-                    adj[index].add((i + 1) * width + j - 1);
+                    adj.get(index).add((i + 1) * width + j - 1);
                 }
                 if (i != height - 1 && j != width - 1) {
-                    adj[index].add((i + 1) * width + j + 1);
+                    adj.get(index).add((i + 1) * width + j + 1);
                 }
             }
         }
@@ -110,6 +112,7 @@ public class BoggleSolver {
         }
 
         return res;
+
         // 对board中的每个字符进行DFS，并将过程中得到的有效字符串保存下来
 
     }
