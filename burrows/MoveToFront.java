@@ -4,6 +4,9 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.BinaryStdIn;
+import edu.princeton.cs.algs4.BinaryStdOut;
+
 public class MoveToFront {
 
     // 对于一个队列，初始化顺序为字母表顺序
@@ -24,9 +27,15 @@ public class MoveToFront {
     //    平均每个字母需要R/2次查找，常数次链表指针赋值操作
     //    即时间复杂度满足nR的需求
 
+    private static int radix = 256;
+
     // apply move-to-front encoding, reading from standard input and writing to standard output
     public static void encode() {
-
+        CharSequence sequence = new CharSequence();
+        while (!BinaryStdIn.isEmpty()) {
+            char c = BinaryStdIn.readChar();
+            BinaryStdOut.write(sequence.getIndexAndSetFirst(c));
+        }
     }
 
     // apply move-to-front decoding, reading from standard input and writing to standard output
@@ -37,7 +46,15 @@ public class MoveToFront {
     // if args[0] is "-", apply move-to-front encoding
     // if args[0] is "+", apply move-to-front decoding
     public static void main(String[] args) {
-
+        if (args.length < 1) {
+            return;
+        }
+        if (args[0].equals("+")) {
+            decode();
+        }
+        if (args[0].equals("-")) {
+            encode();
+        }
     }
 
 }
