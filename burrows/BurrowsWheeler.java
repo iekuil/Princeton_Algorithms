@@ -5,7 +5,10 @@
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.BinaryStdIn;
-import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.BinaryStdOut;
+import edu.princeton.cs.algs4.ResizingArrayQueue;
+
+import java.util.ArrayList;
 
 public class BurrowsWheeler {
 
@@ -66,6 +69,9 @@ public class BurrowsWheeler {
 
     // apply Burrows-Wheeler transform,
     // reading from standard input and writing to standard output
+
+    private static int radix = 256;
+
     public static void transform() {
         String s = BinaryStdIn.readString();
         CircularSuffixArray csa = new CircularSuffixArray(s);
@@ -80,17 +86,70 @@ public class BurrowsWheeler {
             }
             transformed[i] = s.charAt((length + index - 1) % length);
         }
-        // BinaryStdOut.write(first + '0');
-        // BinaryStdOut.write("\n");
-        // BinaryStdOut.write(String.valueOf(transformed));
-        // BinaryStdOut.close();
-        StdOut.println(first);
-        StdOut.println(String.valueOf(transformed));
+        BinaryStdOut.write(first);
+        for (int i = 0; i < length; i++) {
+            BinaryStdOut.write(transformed[i]);
+        }
+        BinaryStdOut.close();
     }
 
     // apply Burrows-Wheeler inverse transform,
     // reading from standard input and writing to standard output
     public static void inverseTransform() {
+        int first = BinaryStdIn.readInt();
+        char[] tail = BinaryStdIn.readString().toCharArray();
+        int length = tail.length;
+        char[] head = radixSort(tail);
+
+        ArrayList<ResizingArrayQueue<Integer>> queues = new ArrayList<>();
+        for (char i = 0; i < radix; i++) {
+            queues.add(new ResizingArrayQueue<>());
+        }
+
+        for (int i = 0; i < length; i++) {
+            queues.get(tail[i]).enqueue(i);
+        }
+
+        int[] next = new int[length];
+        for (int i = 0; i < length; i++) {
+            next[i] = queues.get(head[i]).dequeue();
+        }
+
+        char[] origin = new char[length];
+        int originIndex = first;
+        for (int i = 0; i < length; i++) {
+            origin[i] = head[originIndex];
+            originIndex = next[originIndex];
+        }
+
+        for (int i = 0; i < length; i++) {
+            BinaryStdOut.write(origin[i]);
+        }
+        BinaryStdOut.close();
+    }
+
+    private static char[] radixSort(char[] origin) {
+        if (origin == null) {
+            throw new IllegalArgumentException("");
+        }
+        int length = origin.length;
+
+        int[] count = new int[radix + 1];
+        char[] res = new char[length];
+
+        for (int i = 0; i < length; i++) {
+            count[origin[i] + 1]++;
+        }
+
+        for (int r = 0; r < radix; r++) {
+            count[r + 1] += count[r];
+        }
+
+        for (int i = 0; i < length; i++) {
+            res[count[origin[i]]++] = origin[i];
+        }
+
+        return res;
     }
 
     // if args[0] is "-", apply Burrows-Wheeler transform
