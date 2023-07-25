@@ -36,11 +36,17 @@ public class MoveToFront {
             char c = BinaryStdIn.readChar();
             BinaryStdOut.write(sequence.getIndexAndSetFirst(c));
         }
+        BinaryStdOut.close();
     }
 
     // apply move-to-front decoding, reading from standard input and writing to standard output
     public static void decode() {
-
+        CharSequence sequence = new CharSequence();
+        while (!BinaryStdIn.isEmpty()) {
+            int i = BinaryStdIn.readChar();
+            BinaryStdOut.write(sequence.getCharAndSetFirst(i));
+        }
+        BinaryStdOut.close();
     }
 
     // if args[0] is "-", apply move-to-front encoding

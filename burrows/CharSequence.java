@@ -56,13 +56,13 @@ public class CharSequence {
         }
     }
 
-    public int getIndexAndSetFirst(char c) {
+    public char getIndexAndSetFirst(char c) {
         // 沿着链表顺序查找字符c
         // 并把c设置为链表起点
         if (isEmpty()) {
             throw new IllegalArgumentException("");
         }
-        int index = 0;
+        char index = 0;
         for (Node node = first; node != null; node = node.next) {
             if (node.c == c) {
                 removeNode(node);
@@ -71,7 +71,28 @@ public class CharSequence {
             }
             index += 1;
         }
-        return -1;
+        return Character.MAX_VALUE;
+    }
+
+    public char getCharAndSetFirst(int i) {
+        // 沿着链表查找第i个字符
+        // 并将该字符所在的节点设置为链表起点
+        if (isEmpty()) {
+            throw new IllegalArgumentException("");
+        }
+        if (i >= radix) {
+            throw new IllegalArgumentException("");
+        }
+        int index = 0;
+        for (Node node = first; node != null; node = node.next) {
+            if (i == index) {
+                removeNode(node);
+                insertHead(node);
+                return node.c;
+            }
+            index += 1;
+        }
+        return Character.MAX_VALUE;
     }
 
 }
