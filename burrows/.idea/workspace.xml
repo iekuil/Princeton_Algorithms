@@ -83,7 +83,13 @@
     &quot;last_opened_file_path&quot;: &quot;E:/code/algorithms/burrows&quot;
   }
 }</component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.BurrowsWheeler">
+    <configuration name="BurrowsWheeler" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="BurrowsWheeler" />
+      <module name="Algorithms, Part II" />
+      <option name="PROGRAM_PARAMETERS" value="- &lt; abra.txt" />
+      <method v="2" />
+    </configuration>
     <configuration name="MoveToFront" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="MoveToFront" />
       <module name="Algorithms, Part II" />
@@ -142,6 +148,11 @@
             <option name="WATCH_EXIT" value="false" />
           </properties>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/BurrowsWheeler.java</url>
+          <line>69</line>
+          <option name="timeStamp" value="4" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -4,6 +4,9 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.BinaryStdIn;
+import edu.princeton.cs.algs4.StdOut;
+
 public class BurrowsWheeler {
 
     // 正向变换：
@@ -64,6 +67,25 @@ public class BurrowsWheeler {
     // apply Burrows-Wheeler transform,
     // reading from standard input and writing to standard output
     public static void transform() {
+        String s = BinaryStdIn.readString();
+        CircularSuffixArray csa = new CircularSuffixArray(s);
+        int length = csa.length();
+        char[] transformed = new char[length];
+        int first = 0;
+
+        for (int i = 0; i < length; i++) {
+            int index = csa.index(i);
+            if (index == 0) {
+                first = i;
+            }
+            transformed[i] = s.charAt((length + index - 1) % length);
+        }
+        // BinaryStdOut.write(first + '0');
+        // BinaryStdOut.write("\n");
+        // BinaryStdOut.write(String.valueOf(transformed));
+        // BinaryStdOut.close();
+        StdOut.println(first);
+        StdOut.println(String.valueOf(transformed));
     }
 
     // apply Burrows-Wheeler inverse transform,
@@ -74,6 +96,15 @@ public class BurrowsWheeler {
     // if args[0] is "-", apply Burrows-Wheeler transform
     // if args[0] is "+", apply Burrows-Wheeler inverse transform
     public static void main(String[] args) {
+        if (args.length < 1) {
+            return;
+        }
+        if (args[0].equals("+")) {
+            inverseTransform();
+        }
+        if (args[0].equals("-")) {
+            transform();
+        }
     }
 
 }
