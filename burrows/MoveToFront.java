@@ -36,6 +36,7 @@ public class MoveToFront {
             char c = BinaryStdIn.readChar();
             BinaryStdOut.write(sequence.getIndexAndSetFirst(c));
         }
+        BinaryStdIn.close();
         BinaryStdOut.close();
     }
 
@@ -43,9 +44,10 @@ public class MoveToFront {
     public static void decode() {
         CharSequence sequence = new CharSequence();
         while (!BinaryStdIn.isEmpty()) {
-            int i = BinaryStdIn.readChar();
+            char i = BinaryStdIn.readChar();
             BinaryStdOut.write(sequence.getCharAndSetFirst(i));
         }
+        BinaryStdIn.close();
         BinaryStdOut.close();
     }
 
