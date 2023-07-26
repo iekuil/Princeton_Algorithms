@@ -35,9 +35,9 @@ public class CircularSuffixArray {
     // 这里考虑三向字符串快速排序
     //
 
-    private String s;
+    private final String s;
     private int[] index;
-    private int length;
+    private final int length;
 
     // circular suffix array of s
     public CircularSuffixArray(String s) {
@@ -55,14 +55,14 @@ public class CircularSuffixArray {
         sort();
     }
 
-    private int charAt(int stringId, int index) {
+    private int charAt(int stringId, int i) {
         if (stringId < 0 || stringId >= length) {
             throw new IllegalArgumentException("");
         }
-        if (index < 0 || index >= length) {
+        if (i < 0 || i >= length) {
             return -1;
         }
-        return s.charAt((stringId + index) % length);
+        return s.charAt((stringId + i) % length);
     }
 
     private void sort() {

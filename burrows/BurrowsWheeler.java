@@ -6,9 +6,6 @@
 
 import edu.princeton.cs.algs4.BinaryStdIn;
 import edu.princeton.cs.algs4.BinaryStdOut;
-import edu.princeton.cs.algs4.ResizingArrayQueue;
-
-import java.util.ArrayList;
 
 public class BurrowsWheeler {
 
@@ -70,8 +67,6 @@ public class BurrowsWheeler {
     // apply Burrows-Wheeler transform,
     // reading from standard input and writing to standard output
 
-    private static int radix = 256;
-
     public static void transform() {
         String s = BinaryStdIn.readString();
         CircularSuffixArray csa = new CircularSuffixArray(s);
@@ -99,46 +94,16 @@ public class BurrowsWheeler {
         int first = BinaryStdIn.readInt();
         char[] tail = BinaryStdIn.readString().toCharArray();
         int length = tail.length;
-        char[] head = radixSort(tail);
 
-        ArrayList<ResizingArrayQueue<Integer>> queues = new ArrayList<>();
-        for (char i = 0; i < radix; i++) {
-            queues.add(new ResizingArrayQueue<>());
-        }
-
-        for (int i = 0; i < length; i++) {
-            queues.get(tail[i]).enqueue(i);
-        }
-
-        int[] next = new int[length];
-        for (int i = 0; i < length; i++) {
-            next[i] = queues.get(head[i]).dequeue();
-        }
-
-        char[] origin = new char[length];
-        int originIndex = first;
-        for (int i = 0; i < length; i++) {
-            origin[i] = head[originIndex];
-            originIndex = next[originIndex];
-        }
-
-        for (int i = 0; i < length; i++) {
-            BinaryStdOut.write(origin[i]);
-        }
-        BinaryStdOut.close();
-    }
-
-    private static char[] radixSort(char[] origin) {
-        if (origin == null) {
-            throw new IllegalArgumentException("");
-        }
-        int length = origin.length;
+        MultiQueues queues = new MultiQueues();
+        int radix = 256;
 
         int[] count = new int[radix + 1];
-        char[] res = new char[length];
+        char[] head = new char[length];
 
         for (int i = 0; i < length; i++) {
-            count[origin[i] + 1]++;
+            count[tail[i] + 1]++;
+            queues.enqueue(tail[i], i);
         }
 
         for (int r = 0; r < radix; r++) {
@@ -146,10 +111,21 @@ public class BurrowsWheeler {
         }
 
         for (int i = 0; i < length; i++) {
-            res[count[origin[i]]++] = origin[i];
+            head[count[tail[i]]++] = tail[i];
         }
 
-        return res;
+        int[] next = new int[length];
+        for (int i = 0; i < length; i++) {
+            next[i] = queues.dequeue(head[i]);
+        }
+
+        int originIndex = first;
+        for (int i = 0; i < length; i++) {
+            BinaryStdOut.write(head[originIndex]);
+            originIndex = next[originIndex];
+        }
+
+        BinaryStdOut.close();
     }
 
     // if args[0] is "-", apply Burrows-Wheeler transform

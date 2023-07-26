@@ -27,8 +27,6 @@ public class MoveToFront {
     //    平均每个字母需要R/2次查找，常数次链表指针赋值操作
     //    即时间复杂度满足nR的需求
 
-    private static int radix = 256;
-
     // apply move-to-front encoding, reading from standard input and writing to standard output
     public static void encode() {
         CharSequence sequence = new CharSequence();
