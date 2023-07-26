@@ -94,8 +94,7 @@
       <option name="MAIN_CLASS_NAME" value="MoveToFront" />
       <module name="Algorithms, Part II" />
       <option name="PROGRAM_PARAMETERS" value="-" />
-      <option name="REDIRECT_INPUT" value="true" />
-      <option name="INPUT_FILE" value="aesop.txt" />
+      <option name="INPUT_FILE" value="amendments.txt" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -153,5 +152,10 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="CharSequence" memberName="first" />
+      </pinned-members>
+    </pin-to-top-manager>
   </component>
 </project>

@@ -65,8 +65,10 @@ public class CharSequence {
         char index = 0;
         for (Node node = first; node != null; node = node.next) {
             if (node.c == c) {
-                removeNode(node);
-                insertHead(node);
+                if (first != node) {
+                    removeNode(node);
+                    insertHead(node);
+                }
                 return index;
             }
             index += 1;
@@ -86,8 +88,10 @@ public class CharSequence {
         int index = 0;
         for (Node node = first; node != null; node = node.next) {
             if (i == index) {
-                removeNode(node);
-                insertHead(node);
+                if (first != node) {
+                    removeNode(node);
+                    insertHead(node);
+                }
                 return node.c;
             }
             index += 1;
